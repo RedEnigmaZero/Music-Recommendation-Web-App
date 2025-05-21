@@ -13,11 +13,11 @@ web:
   http: 0.0.0.0:5556
 
 staticClients:
-  - id: flask-app
+  - id: Music-app
     redirectURIs:
       - http://localhost:8000/authorize
-    name: flask_app
-    secret: flask-secret
+    name: Music-app
+    secret: OIDC_SECRET_KEY_TEST
 
 enablePasswordDB: true
 

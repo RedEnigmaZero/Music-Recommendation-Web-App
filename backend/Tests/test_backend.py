@@ -5,7 +5,7 @@ import requests
 from unittest.mock import patch, MagicMock
 
 # Set environment variable before importing app
-os.environ['NYT_API_KEY'] = 'test_api_key'
+os.environ['SPOTIFY_API_KEY'] = 'test_api_key'
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app import app
@@ -30,8 +30,8 @@ class TestRoutes(unittest.TestCase):
         }
         
     def tearDown(self):
-        if 'NYT_API_KEY' in os.environ:
-            del os.environ['NYT_API_KEY']
+        if 'SPOTIFY_API_KEY' in os.environ:
+            del os.environ['SPOTIFY_API_KEY']
             
     @patch('requests.get')
     def test_get_articles(self, mock_get):
