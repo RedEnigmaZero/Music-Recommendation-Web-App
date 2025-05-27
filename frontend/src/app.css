@@ -77,3 +77,26 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+.login-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: 100vh;
+	text-align: center;
+  }
+  
+  .login-container h1 {
+	margin-bottom: 1rem;
+	font-size: 2.5rem;
+  }
+  
+  .login-container p {
+	font-size: 1.25rem;
+	margin-bottom: 1rem;
+  }
+  
+  .login-container button {
+	margin-top: 1rem;
+  }

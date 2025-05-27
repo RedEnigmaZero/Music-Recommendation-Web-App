@@ -1,64 +1,63 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import svelteLogo from './assets/svelte.svg';
-  import viteLogo from '/vite.svg';
-  import Counter from './lib/Counter.svelte';
-
-  let apiKey: string = '';
-
-  onMount(async () => {
-    try {
-      const res = await fetch('/api/key');
-      const data = await res.json();
-      apiKey = data.apiKey;
-    } catch (error) {
-      console.error('Failed to fetch API key:', error);
-    }
-  }); 
-</script>
-
-<main>
-  <div>
-    <a href="https://vite.dev" target="_blank" rel="noreferrer">
-      <img src={viteLogo} class="logo" alt="Vite Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank" rel="noreferrer">
-      <img src={svelteLogo} class="logo svelte" alt="Svelte Logo" />
-    </a>
-  </div>
-  <h1>Vite + Svelte</h1>
-
-  <div class="card">
-    <Counter />
-  </div>
-
-  <p>
-    Your API Key: <strong>{apiKey}</strong>
-  </p>
-
-  <p>
-    Check out <a href="https://github.com/sveltejs/kit#readme" target="_blank" rel="noreferrer">SvelteKit</a>, the official Svelte app framework powered by Vite!
-  </p>
-
-  <p class="read-the-docs">
-    Click on the Vite and Svelte logos to learn more
-  </p>
-</main>
-
-<style>
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
-  }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-  }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
-  }
-  .read-the-docs {
-    color: #888;
-  }
-</style>
+	import { onMount } from 'svelte';
+  
+	let isAuthenticated = false;
+	let userInfo = null;
+  
+	// Check for auth token or handle redirect response
+	onMount(async () => {
+	  const params = new URLSearchParams(window.location.search);
+	  const code = params.get('code');
+  
+	  if (code) {
+		// Send code to your Flask backend to exchange for token
+		const response = await fetch(`http://localhost:5000/api/auth/authorize?code=${code}`);
+		if (response.ok) {
+		  const data = await response.json();
+		  userInfo = data.user;
+		  isAuthenticated = true;
+		}
+	  }
+	});
+  
+	const DEX_CLIENT_ID = "Music-app";
+	const REDIRECT_URI = "http://localhost:8000/authorize";
+	const DEX_AUTH_ENDPOINT = "http://localhost:5556/auth";
+  
+	const loginWithDex = () => {
+	  const loginUrl = `${DEX_AUTH_ENDPOINT}?client_id=${DEX_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=openid email profile`;
+	  window.location.href = loginUrl;
+	};
+  
+	const logout = () => {
+	  isAuthenticated = false;
+	  userInfo = null;
+	  window.location.href = '/';
+	};
+  </script>
+  
+  <svelte:head>
+	<title>Music Match</title>
+	<link rel="stylesheet" href="/app.css" />
+  </svelte:head>
+  
+  {#if isAuthenticated}
+	<div class="main-container">
+	  <header>
+		<h1>🎵 Welcome, {userInfo?.name || "User"}!</h1>
+		<button on:click={logout}>Logout</button>
+	  </header>
+  
+	  <section class="content">
+		<p>Set your music preferences or start exploring recommendations.</p>
+		<!-- Placeholder for additional components like preferences or song recs -->
+	  </section>
+	</div>
+  {:else}
+	<div class="login-container">
+	  <h1>🎵 Welcome to Music Match 🎵</h1>
+	  <p>Discover music you'll love based on your preferences.</p>
+	  <button on:click={loginWithDex}>Login with Dex</button>
+	</div>
+  {/if}
+  
