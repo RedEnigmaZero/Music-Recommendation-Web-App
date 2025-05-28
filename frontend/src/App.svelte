@@ -1,23 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-  
+	import type { User } from './lib/User';
+
 	let isAuthenticated = false;
-	let userInfo = null;
+	let userInfo: User | null = null;
   
 	// Check for auth token or handle redirect response
 	onMount(async () => {
-	  const params = new URLSearchParams(window.location.search);
-	  const code = params.get('code');
-  
-	  if (code) {
-		// Send code to your Flask backend to exchange for token
-		const response = await fetch(`http://localhost:5000/api/auth/authorize?code=${code}`);
-		if (response.ok) {
-		  const data = await response.json();
-		  userInfo = data.user;
-		  isAuthenticated = true;
-		}
-	  }
+		await getUserInfo();
 	});
   
 	const DEX_CLIENT_ID = "Music-app";
@@ -25,15 +15,29 @@
 	const DEX_AUTH_ENDPOINT = "http://localhost:5556/auth";
   
 	const loginWithDex = () => {
-	  const loginUrl = `${DEX_AUTH_ENDPOINT}?client_id=${DEX_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=openid email profile`;
+	  const loginUrl = `${DEX_AUTH_ENDPOINT}?client_id=${DEX_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=openid%20email%20profile`;
 	  window.location.href = loginUrl;
 	};
   
 	const logout = () => {
 	  isAuthenticated = false;
 	  userInfo = null;
-	  window.location.href = '/';
+	  window.location.href = 'http://localhost:8000/logout';
 	};
+
+	// Get user info through backend
+	async function getUserInfo() {
+		const res = await fetch("/api/me");
+		if (!res.ok) {
+			console.error("NetworkError" + res);
+			throw Error("NetworkError" + res);
+		}
+		let data = await res.json();
+		if (data) {
+			userInfo = data;
+			isAuthenticated = true;
+		}
+	}
   </script>
   
   <svelte:head>
