@@ -16,8 +16,8 @@ staticClients:
   - id: Music-app
     redirectURIs:
       - http://localhost:8000/authorize
-    name: Music-app
-    secret: OIDC_SECRET_KEY_TEST
+    name: Music App
+    secret: music-secret
 
 enablePasswordDB: true
 
