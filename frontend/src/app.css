@@ -39,12 +39,6 @@ h1 {
   padding: 2em;
 }
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
 
 button {
   border-radius: 8px;
@@ -99,4 +93,115 @@ button:focus-visible {
   
   .login-container button {
 	margin-top: 1rem;
+  }
+
+  .app-layout {
+	display: flex;
+	height: 100vh;
+	width: 100vw;
+  }
+  
+  .sidebar {
+	width: 220px;
+	background-color: #1a1a1a;
+	color: white;
+	padding: 2rem 1rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center; /* Center items horizontally */
+	/* Remove justify-content: space-between */
+  }
+  
+  .sidebar h2 {
+	font-size: 1.5rem;
+	margin-bottom: 2rem;
+	text-align: center;
+  }
+  
+  .sidebar nav {
+	width: 100%; /* Make nav take full width */
+	/* Remove any margin-top if present */
+  }
+  
+  .sidebar nav ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	width: 100%; /* Make ul take full width */
+  }
+  
+  .sidebar nav li {
+	margin-bottom: 1rem;
+	text-align: center; /* Center the text */
+  }
+  
+  .sidebar nav button {
+	background: none;
+	border: none;
+	color: white;
+	font-size: 1.1rem;
+	cursor: pointer;
+	padding: 0.5rem 0;
+	width: 100%; /* Make buttons full width */
+	text-align: center; /* Center button text */
+  }
+  
+  .sidebar nav button:hover {
+	text-decoration: underline;
+  }
+  
+  .main-view {
+	flex: 1;
+	padding: 2rem;
+	background-color: #f0f0f0;
+	overflow-y: auto;
+  }
+  
+  .main-view h1 {
+	font-size: 2rem;
+	margin-bottom: 1rem;
+  }
+  
+  .app-layout {
+	display: flex;
+	min-height: 100vh;
+  }
+  
+  .main-view {
+	flex: 1;
+	padding: 2rem;
+	background-color: #f0f0f0;
+	color: black;
+  }
+  
+  .main-view h1 {
+	font-size: 2rem;
+	margin-bottom: 1rem;
+  }
+  
+  .main-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+  }
+  
+  .logout-btn {
+	background-color: #d9534f;
+	color: white;
+	font-weight: bold;
+	border: none;
+	padding: 0.5rem 1rem;
+	border-radius: 6px;
+	cursor: pointer;
+  }
+  
+  .logout-btn:hover {
+	background-color: #c9302c;
+  }
+  
+  html, body {
+	height: 100%;
+	width: 100%;
+	margin: 0;
+	padding: 0;
   }
