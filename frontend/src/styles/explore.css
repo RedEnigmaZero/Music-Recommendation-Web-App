@@ -1,0 +1,43 @@
+.main-view {
+    display: flex;
+    flex-direction: column;
+}
+
+.explore-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#player {
+    height: 352px;
+    min-width: 400px;
+    width: 40%;
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+}
+
+#explore-action-buttons {
+    margin: auto;
+    min-width: 400px;
+    width: 40%;
+    display: flex;
+    padding-top: 2em;
+    justify-content: space-around;
+}
+
+#explore-hints {
+    width: 100%;
+    min-width: 400px;
+    text-align: center;
+    margin-top: 1em;
+}
+
+@media screen and (max-height: 700px) {
+    #player {
+        height: 232px;
+    }
+}
