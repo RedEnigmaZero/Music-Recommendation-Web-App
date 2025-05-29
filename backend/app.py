@@ -1,6 +1,6 @@
 # Written by Navjeet for HW3
 
-from flask import Flask, jsonify, send_from_directory, request, session, redirect
+from flask import Flask, jsonify, send_from_directory, request, session, redirect, url_for
 import os
 from flask_cors import CORS
 import requests
@@ -8,6 +8,11 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime, timezone
 from jose import jwt
+
+from spotipy import Spotify
+from spotipy.oauth2 import SpotifyOAuth
+from spotipy.cache_handler import FlaskSessionCacheHandler
+
 
 static_path = os.getenv('STATIC_PATH','static')
 template_path = os.getenv('TEMPLATE_PATH','templates')
@@ -20,6 +25,46 @@ app = Flask(__name__, static_folder="static", template_folder="templates")
 CORS(app)
 
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "secret-dev-key")
+
+SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
+SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
+redirect_uri = 'http://localhost:5000/callback'
+scope = 'playlist-read-private'
+
+cache_handler = FlaskSessionCacheHandler(session)
+sp_oauth = SpotifyOAuth(
+    client_id=SPOTIFY_CLIENT_ID,
+    client_secret=SPOTIFY_CLIENT_SECRET,
+    redirect_uri=redirect_uri,
+    scope=scope,
+    cache_handler=cache_handler,
+    show_dialog=True
+)
+sp = Spotify(auth_manager=sp_oauth)
+
+@app.route("/spotify/authorize")
+def home():
+    if not sp_oauth.validate_token(sp_oauth.get_cached_token()):
+        auth_url = sp_oauth.get_authorize_url()
+        return redirect(auth_url)
+    return redirect(url_for('get_playlists'))
+
+@app.route("/callback")
+def callback():
+    sp_oauth.get_access_token(request.args['code'])
+    return redirect(url_for('get_playlists'))
+
+@app.route("/get_playlists")
+def get_playlists():
+    if not sp_oauth.validate_token(sp_oauth.get_cached_token()):
+        auth_url = sp_oauth.get_authorize_url()
+        return redirect(auth_url)
+    
+    playlists = sp.current_user_playlists()
+    playlists_info = [(pl['name'], pl['external_urls']['spotify']) for pl in playlists['items']]
+    playlists_html = '<br>'.join([f'<a href="{url}">{name}</a>' for name, url in playlists_info])
+
+    return playlists_html
 
 # The code down below should give us the info from the user. It checks if a user is already logged in by looking for their data.
 # If the user is found in the session, then it will set the user's name, email, and moderator status.
@@ -78,7 +123,7 @@ def authorize():
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect("http://localhost:5173/")
+    return redirect(url_for('home'))
 
 # The code down below is a route that the frontend can use to help identify the user's info, email, and moderator role.
 
