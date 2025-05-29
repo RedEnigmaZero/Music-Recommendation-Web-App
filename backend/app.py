@@ -28,8 +28,8 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY", "secret-dev-key")
 
 SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
-redirect_uri = 'http://localhost:5000/callback'
-scope = 'playlist-read-private'
+redirect_uri = 'http://127.0.0.1:8000/callback'
+scope = 'playlist-read-private user-read-email'
 
 cache_handler = FlaskSessionCacheHandler(session)
 sp_oauth = SpotifyOAuth(
@@ -47,12 +47,24 @@ def home():
     if not sp_oauth.validate_token(sp_oauth.get_cached_token()):
         auth_url = sp_oauth.get_authorize_url()
         return redirect(auth_url)
-    return redirect(url_for('get_playlists'))
+    return redirect('http://localhost:5173/')
 
 @app.route("/callback")
 def callback():
     sp_oauth.get_access_token(request.args['code'])
-    return redirect(url_for('get_playlists'))
+
+    spotify_user_profile = sp.current_user()
+
+    user_info = {
+        "name": spotify_user_profile['display_name'],
+        "email": spotify_user_profile['email'],
+        "id": spotify_user_profile['id'],
+        "moderator": False
+    }
+    session["user"] = user_info
+
+
+    return redirect("http://localhost:5173/")
 
 @app.route("/get_playlists")
 def get_playlists():
@@ -87,7 +99,7 @@ def user():
 # Authorization Code Flow: https://auth0.com/docs/get-started/authentication-and-authorization-flow/authorization-code-flow
 # JWT: https://jwt.io/introduction
 # Flask-OIDC: https://flask-oidc.readthedocs.io/en/latest/
-
+"""
 @app.route("/authorize")
 def authorize():
     code = request.args.get("code")
@@ -117,13 +129,14 @@ def authorize():
     session["user"] = user
     return redirect("http://localhost:5173/")
 
+"""
 # The code down below is a route that is used when the user wants to logout.
 # The code works by clearing out the session data, and then going back to the homepage.
 
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect(url_for('home'))
+    return redirect("http://localhost:5173/")
 
 # The code down below is a route that the frontend can use to help identify the user's info, email, and moderator role.
 
