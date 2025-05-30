@@ -1,6 +1,7 @@
-.main-view {
+.explore-main-view {
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .explore-content {
@@ -10,16 +11,114 @@
     justify-content: space-between;
 }
 
-#player {
-    height: 352px;
-    min-width: 400px;
-    width: 40%;
-    margin: auto;
+#card-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 300px;
     display: flex;
     justify-content: center;
-    overflow: hidden;
+    align-items: center;
+    margin-top: 20px;
 }
 
+/* Cards and swipe related */
+/* Adopted from https://codepen.io/radenadri/pen/ZYYQKgN */
+.explore-card {
+    display: flex;
+    position: absolute;
+    height: 352px;
+    width: 40%;
+    min-width: 400px;
+    justify-content: center;
+    overflow: hidden;
+    cursor: grab;
+    border-radius: 15px;
+    border: none;
+
+    /* To animate swipes */
+    will-change: transform;
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+/* To stack cards in order */
+/* Adopted from https://codepen.io/radenadri/pen/ZYYQKgN */
+.explore-card-1 {
+    z-index: 3;
+    transform: translateY(0) rotate(0deg);
+}
+
+.explore-card-2 {
+    z-index: 2;
+    transform: translateY(10px) rotate(2deg);
+}
+
+.explore-card-3 {
+    z-index: 1;
+    transform: translateY(20px) rotate(-2deg);
+}
+
+/* Animation for swipe */
+/* Adopted from https://codepen.io/radenadri/pen/ZYYQKgN */
+.swipe-left {
+    transform: translateX(-200px) rotate(-30deg) !important;
+    opacity: 0;
+}
+
+.swipe-right {
+    transform: translateX(200px) rotate(30deg) !important;
+    opacity: 0;
+}
+
+/* Show user which direction is what */
+/* Adopted from https://codepen.io/radenadri/pen/ZYYQKgN */
+.explore-action {
+    position: absolute;
+    opacity: 0;
+    font-size: 100px;
+    z-index: 10;
+    transition: all 0.5s;
+}
+
+#explore-reject {
+    left: 20%;
+    top: 30%;
+    color: #ff4757;
+}
+
+#explore-accept {
+    right: 20%;
+    top: 30%;
+    color: #1dd1a1;
+}
+
+.show-action {
+    opacity: 0.7;
+    transform: scale(1.2);
+}
+
+/* The box that appears when user run out of cards */
+/* Adopted from https://codepen.io/radenadri/pen/ZYYQKgN */
+#empty-state {
+    text-align: center;
+    padding: 40px;
+    background-color: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* Make overlay so user can swipe on card */
+/* Not covering entire thing so that user can use pause and play */
+.explore-player-overlay {
+    height: 100%;
+    width: 85%;
+    position: absolute;
+    left: 0
+}
+
+/* Buttons at the bottom for like and dislike */
 #explore-action-buttons {
     margin: auto;
     min-width: 400px;
@@ -29,6 +128,7 @@
     justify-content: space-around;
 }
 
+/* Keyboard shortcut hints */
 #explore-hints {
     width: 100%;
     min-width: 400px;
@@ -36,8 +136,13 @@
     margin-top: 1em;
 }
 
+.hidden {
+    display: none;
+}
+
+/* Change height of spotify embed when screen get too small */
 @media screen and (max-height: 700px) {
-    #player {
+    .explore-card {
         height: 232px;
     }
 }
