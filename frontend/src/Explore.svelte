@@ -376,12 +376,12 @@
 
             <!-- Icon for moving the card to left side -->
             <div id="explore-reject" class="explore-action">
-                <p>N</p>
+                <p>❌</p>
             </div>
 
             <!-- Icon for moving the card to right side -->
             <div id="explore-accept" class="explore-action">
-                <p>Y</p>
+                <p>♥️</p>
             </div>
 
             <!-- Cards will be inserted here by JavaScript -->
@@ -399,6 +399,6 @@
         </div>
 
         <!-- Keyboard shortcut hints for user -->
-        <p id="explore-hints">Some text about keyboard shortcut</p>
+        <p id="explore-hints"><span><kbd>←</kbd> dislike</span> <span><kbd>→</kbd> like</span></p>
     </section>
 </main>
