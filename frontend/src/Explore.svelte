@@ -22,7 +22,7 @@
     let isAnimating = false;
 
     // Array of div containing iframes
-    let cards: HTMLDivElement[] = [];
+    let cards: {element: HTMLDivElement, id: string}[] = [];
 
     // Array of embed controller for autoplay
     // Separated from cards array because we don't know what type this is
@@ -56,7 +56,7 @@
 
             // Set up drag events for the top card
             if (cards.length > 0) {
-                setupDrag(cards[0]);
+                setupDrag(cards[0].element);
             }
 
             // Assign key binding here to prevent user from swiping before cards exist
@@ -108,7 +108,7 @@
         )
 
         // Once card is made, push it to cards array
-        cards.push(exploreCard);
+        cards.push({element: exploreCard, id: trackId});
 
         // Increase the index for tail element
         currentIndex++;
@@ -124,10 +124,10 @@
     // Remove all ordering class and reassign
     function updateCardPositions() {
         cards.forEach((card, index) => {
-            card.classList.remove("explore-card-1");
-            card.classList.remove("explore-card-2");
-            card.classList.remove("explore-card-3");
-            card.classList.add(`explore-card-${index + 1}`);
+            card.element.classList.remove("explore-card-1");
+            card.element.classList.remove("explore-card-2");
+            card.element.classList.remove("explore-card-3");
+            card.element.classList.add(`explore-card-${index + 1}`);
         });
     }
 
@@ -144,7 +144,7 @@
         updateCardPositions();
         // Set up drag events for the top card
         if (cards.length > 0) {
-            setupDrag(cards[0]);
+            setupDrag(cards[0].element);
         }
         embedControllers[0].play();
     }
@@ -246,10 +246,11 @@
 
         isAnimating = true;
 
-        const card = cards[0];
+        const card = cards[0].element;
         card.classList.add("swipe-right");
 
         setTimeout(() => {
+            postRating(cards[0].id, "like");
             card.remove();
             cards.shift();
 
@@ -263,7 +264,7 @@
 
             // Set up drag for new top card
             if (cards.length > 0) {
-                setupDrag(cards[0]);
+                setupDrag(cards[0].element);
             } else {
                 showEmptyState();
             }
@@ -282,10 +283,11 @@
 
         isAnimating = true;
 
-        const card = cards[0];
+        const card = cards[0].element;
         card.classList.add("swipe-left");
 
         setTimeout(() => {
+            postRating(cards[0].id, "dislike");
             card.remove();
             cards.shift();
 
@@ -299,7 +301,7 @@
 
             // Set up drag for new top card
             if (cards.length > 0) {
-                setupDrag(cards[0]);
+                setupDrag(cards[0].element);
             } else {
                 showEmptyState();
             }
@@ -309,6 +311,44 @@
 
         embedControllers.shift();
         embedControllers[0].play();
+    }
+
+    async function postRating(trackId: string, rating: string) {
+        try {
+            const res = await fetch(`http://localhost:8000/api/feedback/${trackId}`, {
+                method: "PUT",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    rating: rating
+                })
+            });
+            if (!res.ok) {
+                console.error("NetworkError");
+                console.error(res);
+                return;
+            }
+        } catch (error) {
+            console.error(error);
+            return;
+        }
+    }
+
+    async function saveSong() {
+        try {
+            const res = await fetch(`http://localhost:8000/api/save/${cards[0].id}`, {
+                method: "PUT"
+            });
+            if (!res.ok) {
+                console.error("NetworkError");
+                console.error(res);
+                return;
+            }
+        } catch (error) {
+            console.error(error);
+            return;
+        }
     }
 </script>
 
@@ -324,8 +364,8 @@
     <section class="content explore-content">
         <p>Discover new music based on your preferences.</p>
         <!-- Add explore content here -->
+        <p id="explore-prompt">Swipe right if you love the song!</p>
         <div id="card-container">
-
             <!-- Show when no cards left to swipe -->
             <div id="empty-state" class="hidden">
                 <h3>No more for now!</h3>
@@ -353,7 +393,7 @@
             <button onclick={swipeLeft}>Dislike</button>
 
             <!-- Maybe something like super like? -->
-            <button>Save</button>
+            <button onclick={saveSong}>Save</button>
 
             <button onclick={swipeRight}>Like</button>
         </div>
