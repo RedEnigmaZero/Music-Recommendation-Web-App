@@ -1,0 +1,543 @@
+{
+  "href": "https://api.spotify.com/v1/users/gf3xxtswabnwnk9752yxuymas/playlists?offset=0&limit=10&locale=en-US,en;q%3D0.5",
+  "limit": 10,
+  "next": "https://api.spotify.com/v1/users/gf3xxtswabnwnk9752yxuymas/playlists?offset=10&limit=10&locale=en-US,en;q%3D0.5",
+  "offset": 0,
+  "previous": null,
+  "total": 28,
+  "items": [
+    {
+      "collaborative": false,
+      "description": "",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/playlist/3b2z9IlEdaIxkk4iK9jZRx"
+      },
+      "href": "https://api.spotify.com/v1/playlists/3b2z9IlEdaIxkk4iK9jZRx",
+      "id": "3b2z9IlEdaIxkk4iK9jZRx",
+      "images": [
+        {
+          "url": "https://mosaic.scdn.co/640/ab67616d00001e02079e826265dffc3a8a26bac5ab67616d00001e02125b1a330b6f6100ab19dbedab67616d00001e026ff8bc258e3ebc835ffe14caab67616d00001e02beae6e69d6505fd379ef3081",
+          "height": 640,
+          "width": 640
+        },
+        {
+          "url": "https://mosaic.scdn.co/300/ab67616d00001e02079e826265dffc3a8a26bac5ab67616d00001e02125b1a330b6f6100ab19dbedab67616d00001e026ff8bc258e3ebc835ffe14caab67616d00001e02beae6e69d6505fd379ef3081",
+          "height": 300,
+          "width": 300
+        },
+        {
+          "url": "https://mosaic.scdn.co/60/ab67616d00001e02079e826265dffc3a8a26bac5ab67616d00001e02125b1a330b6f6100ab19dbedab67616d00001e026ff8bc258e3ebc835ffe14caab67616d00001e02beae6e69d6505fd379ef3081",
+          "height": 60,
+          "width": 60
+        }
+      ],
+      "name": "Davis to SR",
+      "owner": {
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/95pg7uzh20w905cj0l74kjimj"
+        },
+        "href": "https://api.spotify.com/v1/users/95pg7uzh20w905cj0l74kjimj",
+        "id": "95pg7uzh20w905cj0l74kjimj",
+        "type": "user",
+        "uri": "spotify:user:95pg7uzh20w905cj0l74kjimj",
+        "display_name": "Mira Stenger"
+      },
+      "public": true,
+      "snapshot_id": "AAAAHhKkaT8RrBhyt54PMq6TmNa7c6I0",
+      "tracks": {
+        "href": "https://api.spotify.com/v1/playlists/3b2z9IlEdaIxkk4iK9jZRx/tracks",
+        "total": 23
+      },
+      "type": "playlist",
+      "uri": "spotify:playlist:3b2z9IlEdaIxkk4iK9jZRx",
+      "primary_color": null
+    },
+    {
+      "collaborative": false,
+      "description": "",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/playlist/0fXswGSmbLBs6hM2PMQvN1"
+      },
+      "href": "https://api.spotify.com/v1/playlists/0fXswGSmbLBs6hM2PMQvN1",
+      "id": "0fXswGSmbLBs6hM2PMQvN1",
+      "images": [
+        {
+          "url": "https://mosaic.scdn.co/640/ab67616d00001e02176508e5ab1f50d82627e751ab67616d00001e022e60ff0f37e6504fcc503981ab67616d00001e02b2229a8fdf377abaf3652624ab67616d00001e02dfb2b41e8669c38536b7c3b6",
+          "height": 640,
+          "width": 640
+        },
+        {
+          "url": "https://mosaic.scdn.co/300/ab67616d00001e02176508e5ab1f50d82627e751ab67616d00001e022e60ff0f37e6504fcc503981ab67616d00001e02b2229a8fdf377abaf3652624ab67616d00001e02dfb2b41e8669c38536b7c3b6",
+          "height": 300,
+          "width": 300
+        },
+        {
+          "url": "https://mosaic.scdn.co/60/ab67616d00001e02176508e5ab1f50d82627e751ab67616d00001e022e60ff0f37e6504fcc503981ab67616d00001e02b2229a8fdf377abaf3652624ab67616d00001e02dfb2b41e8669c38536b7c3b6",
+          "height": 60,
+          "width": 60
+        }
+      ],
+      "name": "Oldies playlist",
+      "owner": {
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/1ok4iu616c9cjrrd07eqermrg"
+        },
+        "href": "https://api.spotify.com/v1/users/1ok4iu616c9cjrrd07eqermrg",
+        "id": "1ok4iu616c9cjrrd07eqermrg",
+        "type": "user",
+        "uri": "spotify:user:1ok4iu616c9cjrrd07eqermrg",
+        "display_name": "Susan"
+      },
+      "public": true,
+      "snapshot_id": "AAAC2mZejE9GRneDBjy+RjDZYc0NwqSO",
+      "tracks": {
+        "href": "https://api.spotify.com/v1/playlists/0fXswGSmbLBs6hM2PMQvN1/tracks",
+        "total": 168
+      },
+      "type": "playlist",
+      "uri": "spotify:playlist:0fXswGSmbLBs6hM2PMQvN1",
+      "primary_color": null
+    },
+    {
+      "collaborative": false,
+      "description": "",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/playlist/38FkxuktC00e391TUs9NqE"
+      },
+      "href": "https://api.spotify.com/v1/playlists/38FkxuktC00e391TUs9NqE",
+      "id": "38FkxuktC00e391TUs9NqE",
+      "images": [
+        {
+          "url": "https://mosaic.scdn.co/640/ab67616d00001e023009007708ab5134936a58b3ab67616d00001e026ce61113662ecf693b605ee5ab67616d00001e02aff4aef671b2510be7c115b3ab67616d00001e02e3e3b64cea45265469d4cafa",
+          "height": 640,
+          "width": 640
+        },
+        {
+          "url": "https://mosaic.scdn.co/300/ab67616d00001e023009007708ab5134936a58b3ab67616d00001e026ce61113662ecf693b605ee5ab67616d00001e02aff4aef671b2510be7c115b3ab67616d00001e02e3e3b64cea45265469d4cafa",
+          "height": 300,
+          "width": 300
+        },
+        {
+          "url": "https://mosaic.scdn.co/60/ab67616d00001e023009007708ab5134936a58b3ab67616d00001e026ce61113662ecf693b605ee5ab67616d00001e02aff4aef671b2510be7c115b3ab67616d00001e02e3e3b64cea45265469d4cafa",
+          "height": 60,
+          "width": 60
+        }
+      ],
+      "name": "Driving home late at night",
+      "owner": {
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/95pg7uzh20w905cj0l74kjimj"
+        },
+        "href": "https://api.spotify.com/v1/users/95pg7uzh20w905cj0l74kjimj",
+        "id": "95pg7uzh20w905cj0l74kjimj",
+        "type": "user",
+        "uri": "spotify:user:95pg7uzh20w905cj0l74kjimj",
+        "display_name": "Mira Stenger"
+      },
+      "public": true,
+      "snapshot_id": "AAAAJwXH6P2eX7AWJw5SH3QKbgVMeS4S",
+      "tracks": {
+        "href": "https://api.spotify.com/v1/playlists/38FkxuktC00e391TUs9NqE/tracks",
+        "total": 34
+      },
+      "type": "playlist",
+      "uri": "spotify:playlist:38FkxuktC00e391TUs9NqE",
+      "primary_color": null
+    },
+    {
+      "collaborative": false,
+      "description": "",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/playlist/1wBSeYsiG0CmWJDMbFbTTb"
+      },
+      "href": "https://api.spotify.com/v1/playlists/1wBSeYsiG0CmWJDMbFbTTb",
+      "id": "1wBSeYsiG0CmWJDMbFbTTb",
+      "images": [
+        {
+          "url": "https://mosaic.scdn.co/640/ab67616d00001e0235df3c34f7dff1107e750430ab67616d00001e02684d81c9356531f2a456b1c1ab67616d00001e02775e8184725e0fb89337dd9aab67616d00001e029794fc0e54d795a65d732967",
+          "height": 640,
+          "width": 640
+        },
+        {
+          "url": "https://mosaic.scdn.co/300/ab67616d00001e0235df3c34f7dff1107e750430ab67616d00001e02684d81c9356531f2a456b1c1ab67616d00001e02775e8184725e0fb89337dd9aab67616d00001e029794fc0e54d795a65d732967",
+          "height": 300,
+          "width": 300
+        },
+        {
+          "url": "https://mosaic.scdn.co/60/ab67616d00001e0235df3c34f7dff1107e750430ab67616d00001e02684d81c9356531f2a456b1c1ab67616d00001e02775e8184725e0fb89337dd9aab67616d00001e029794fc0e54d795a65d732967",
+          "height": 60,
+          "width": 60
+        }
+      ],
+      "name": "J-pop jams",
+      "owner": {
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/gf3xxtswabnwnk9752yxuymas"
+        },
+        "href": "https://api.spotify.com/v1/users/gf3xxtswabnwnk9752yxuymas",
+        "id": "gf3xxtswabnwnk9752yxuymas",
+        "type": "user",
+        "uri": "spotify:user:gf3xxtswabnwnk9752yxuymas",
+        "display_name": "zhao"
+      },
+      "public": true,
+      "snapshot_id": "AAAAfyoG1MWCkoQThjU/oilUOUPQ50+t",
+      "tracks": {
+        "href": "https://api.spotify.com/v1/playlists/1wBSeYsiG0CmWJDMbFbTTb/tracks",
+        "total": 65
+      },
+      "type": "playlist",
+      "uri": "spotify:playlist:1wBSeYsiG0CmWJDMbFbTTb",
+      "primary_color": null
+    },
+    {
+      "collaborative": false,
+      "description": "Instrumental Covers by AcousticTrench",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/playlist/2JPtbt5sMp0HrHzzjESVeN"
+      },
+      "href": "https://api.spotify.com/v1/playlists/2JPtbt5sMp0HrHzzjESVeN",
+      "id": "2JPtbt5sMp0HrHzzjESVeN",
+      "images": [
+        {
+          "url": "https://mosaic.scdn.co/640/ab67616d00001e02324258c62110743ca268ee53ab67616d00001e026cccf905420d68523d1768dfab67616d00001e0278b212d8b0c1cd104a333470ab67616d00001e02b546c8b5ee8acf3f188b03e1",
+          "height": 640,
+          "width": 640
+        },
+        {
+          "url": "https://mosaic.scdn.co/300/ab67616d00001e02324258c62110743ca268ee53ab67616d00001e026cccf905420d68523d1768dfab67616d00001e0278b212d8b0c1cd104a333470ab67616d00001e02b546c8b5ee8acf3f188b03e1",
+          "height": 300,
+          "width": 300
+        },
+        {
+          "url": "https://mosaic.scdn.co/60/ab67616d00001e02324258c62110743ca268ee53ab67616d00001e026cccf905420d68523d1768dfab67616d00001e0278b212d8b0c1cd104a333470ab67616d00001e02b546c8b5ee8acf3f188b03e1",
+          "height": 60,
+          "width": 60
+        }
+      ],
+      "name": "AcousticTrench Covers",
+      "owner": {
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/1242736202"
+        },
+        "href": "https://api.spotify.com/v1/users/1242736202",
+        "id": "1242736202",
+        "type": "user",
+        "uri": "spotify:user:1242736202",
+        "display_name": "Trench"
+      },
+      "public": true,
+      "snapshot_id": "AAAAMPg2ky5SE4ipD+EkPgJwiGl3X/iK",
+      "tracks": {
+        "href": "https://api.spotify.com/v1/playlists/2JPtbt5sMp0HrHzzjESVeN/tracks",
+        "total": 17
+      },
+      "type": "playlist",
+      "uri": "spotify:playlist:2JPtbt5sMp0HrHzzjESVeN",
+      "primary_color": null
+    },
+    {
+      "collaborative": false,
+      "description": "This playlist brings together the best of pop – from catchy choruses to songs that stick in your head.  <a href=\"spotify:user:nordicmusic\">See all our playlists.</a>",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/playlist/0OD87lZJDaw883ofK7SFoC"
+      },
+      "href": "https://api.spotify.com/v1/playlists/0OD87lZJDaw883ofK7SFoC",
+      "id": "0OD87lZJDaw883ofK7SFoC",
+      "images": [
+        {
+          "url": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da847289d74d12a2b83dc542506d",
+          "height": null,
+          "width": null
+        }
+      ],
+      "name": "Curated Pop Playlist",
+      "owner": {
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/nordicmusic"
+        },
+        "href": "https://api.spotify.com/v1/users/nordicmusic",
+        "id": "nordicmusic",
+        "type": "user",
+        "uri": "spotify:user:nordicmusic",
+        "display_name": "NPS Music"
+      },
+      "public": true,
+      "snapshot_id": "AAAoMAyUHLpRoG7GMNyBY3p1kJxdz+Qd",
+      "tracks": {
+        "href": "https://api.spotify.com/v1/playlists/0OD87lZJDaw883ofK7SFoC/tracks",
+        "total": 213
+      },
+      "type": "playlist",
+      "uri": "spotify:playlist:0OD87lZJDaw883ofK7SFoC",
+      "primary_color": null
+    },
+    {
+      "collaborative": false,
+      "description": "",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/playlist/27ZvcdDLcH9m1Y68zXJ9x3"
+      },
+      "href": "https://api.spotify.com/v1/playlists/27ZvcdDLcH9m1Y68zXJ9x3",
+      "id": "27ZvcdDLcH9m1Y68zXJ9x3",
+      "images": [
+        {
+          "url": "https://mosaic.scdn.co/640/ab67616d00001e023cf8610f3182644b51fc74f4ab67616d00001e0280e5432053fe7b6850904782ab67616d00001e02862200e3175838660e3dfd09ab67616d00001e02ad9e4e04382316e972c4684c",
+          "height": 640,
+          "width": 640
+        },
+        {
+          "url": "https://mosaic.scdn.co/300/ab67616d00001e023cf8610f3182644b51fc74f4ab67616d00001e0280e5432053fe7b6850904782ab67616d00001e02862200e3175838660e3dfd09ab67616d00001e02ad9e4e04382316e972c4684c",
+          "height": 300,
+          "width": 300
+        },
+        {
+          "url": "https://mosaic.scdn.co/60/ab67616d00001e023cf8610f3182644b51fc74f4ab67616d00001e0280e5432053fe7b6850904782ab67616d00001e02862200e3175838660e3dfd09ab67616d00001e02ad9e4e04382316e972c4684c",
+          "height": 60,
+          "width": 60
+        }
+      ],
+      "name": "Dansk ",
+      "owner": {
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/gf3xxtswabnwnk9752yxuymas"
+        },
+        "href": "https://api.spotify.com/v1/users/gf3xxtswabnwnk9752yxuymas",
+        "id": "gf3xxtswabnwnk9752yxuymas",
+        "type": "user",
+        "uri": "spotify:user:gf3xxtswabnwnk9752yxuymas",
+        "display_name": "zhao"
+      },
+      "public": true,
+      "snapshot_id": "AAAAbOJvHFumNEGw0np4fmzXh25E0vTs",
+      "tracks": {
+        "href": "https://api.spotify.com/v1/playlists/27ZvcdDLcH9m1Y68zXJ9x3/tracks",
+        "total": 40
+      },
+      "type": "playlist",
+      "uri": "spotify:playlist:27ZvcdDLcH9m1Y68zXJ9x3",
+      "primary_color": null
+    },
+
+    {
+      "collaborative": false,
+      "description": "",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/playlist/38FkxuktC00e391TUs9NqE"
+      },
+      "href": "https://api.spotify.com/v1/playlists/38FkxuktC00e391TUs9NqE",
+      "id": "38FkxuktC00e391TUs9NqE",
+      "images": [
+        {
+          "url": "https://mosaic.scdn.co/640/ab67616d00001e023009007708ab5134936a58b3ab67616d00001e026ce61113662ecf693b605ee5ab67616d00001e02aff4aef671b2510be7c115b3ab67616d00001e02e3e3b64cea45265469d4cafa",
+          "height": 640,
+          "width": 640
+        },
+        {
+          "url": "https://mosaic.scdn.co/300/ab67616d00001e023009007708ab5134936a58b3ab67616d00001e026ce61113662ecf693b605ee5ab67616d00001e02aff4aef671b2510be7c115b3ab67616d00001e02e3e3b64cea45265469d4cafa",
+          "height": 300,
+          "width": 300
+        },
+        {
+          "url": "https://mosaic.scdn.co/60/ab67616d00001e023009007708ab5134936a58b3ab67616d00001e026ce61113662ecf693b605ee5ab67616d00001e02aff4aef671b2510be7c115b3ab67616d00001e02e3e3b64cea45265469d4cafa",
+          "height": 60,
+          "width": 60
+        }
+      ],
+      "name": "Driving home late at night",
+      "owner": {
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/95pg7uzh20w905cj0l74kjimj"
+        },
+        "href": "https://api.spotify.com/v1/users/95pg7uzh20w905cj0l74kjimj",
+        "id": "95pg7uzh20w905cj0l74kjimj",
+        "type": "user",
+        "uri": "spotify:user:95pg7uzh20w905cj0l74kjimj",
+        "display_name": "Mira Stenger"
+      },
+      "public": true,
+      "snapshot_id": "AAAAJwXH6P2eX7AWJw5SH3QKbgVMeS4S",
+      "tracks": {
+        "href": "https://api.spotify.com/v1/playlists/38FkxuktC00e391TUs9NqE/tracks",
+        "total": 34
+      },
+      "type": "playlist",
+      "uri": "spotify:playlist:38FkxuktC00e391TUs9NqE",
+      "primary_color": null
+    },
+    {
+      "collaborative": false,
+      "description": "",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/playlist/1wBSeYsiG0CmWJDMbFbTTb"
+      },
+      "href": "https://api.spotify.com/v1/playlists/1wBSeYsiG0CmWJDMbFbTTb",
+      "id": "1wBSeYsiG0CmWJDMbFbTTb",
+      "images": [
+        {
+          "url": "https://mosaic.scdn.co/640/ab67616d00001e0235df3c34f7dff1107e750430ab67616d00001e02684d81c9356531f2a456b1c1ab67616d00001e02775e8184725e0fb89337dd9aab67616d00001e029794fc0e54d795a65d732967",
+          "height": 640,
+          "width": 640
+        },
+        {
+          "url": "https://mosaic.scdn.co/300/ab67616d00001e0235df3c34f7dff1107e750430ab67616d00001e02684d81c9356531f2a456b1c1ab67616d00001e02775e8184725e0fb89337dd9aab67616d00001e029794fc0e54d795a65d732967",
+          "height": 300,
+          "width": 300
+        },
+        {
+          "url": "https://mosaic.scdn.co/60/ab67616d00001e0235df3c34f7dff1107e750430ab67616d00001e02684d81c9356531f2a456b1c1ab67616d00001e02775e8184725e0fb89337dd9aab67616d00001e029794fc0e54d795a65d732967",
+          "height": 60,
+          "width": 60
+        }
+      ],
+      "name": "J-pop jams",
+      "owner": {
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/gf3xxtswabnwnk9752yxuymas"
+        },
+        "href": "https://api.spotify.com/v1/users/gf3xxtswabnwnk9752yxuymas",
+        "id": "gf3xxtswabnwnk9752yxuymas",
+        "type": "user",
+        "uri": "spotify:user:gf3xxtswabnwnk9752yxuymas",
+        "display_name": "zhao"
+      },
+      "public": true,
+      "snapshot_id": "AAAAfyoG1MWCkoQThjU/oilUOUPQ50+t",
+      "tracks": {
+        "href": "https://api.spotify.com/v1/playlists/1wBSeYsiG0CmWJDMbFbTTb/tracks",
+        "total": 65
+      },
+      "type": "playlist",
+      "uri": "spotify:playlist:1wBSeYsiG0CmWJDMbFbTTb",
+      "primary_color": null
+    },
+    {
+      "collaborative": false,
+      "description": "Instrumental Covers by AcousticTrench",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/playlist/2JPtbt5sMp0HrHzzjESVeN"
+      },
+      "href": "https://api.spotify.com/v1/playlists/2JPtbt5sMp0HrHzzjESVeN",
+      "id": "2JPtbt5sMp0HrHzzjESVeN",
+      "images": [
+        {
+          "url": "https://mosaic.scdn.co/640/ab67616d00001e02324258c62110743ca268ee53ab67616d00001e026cccf905420d68523d1768dfab67616d00001e0278b212d8b0c1cd104a333470ab67616d00001e02b546c8b5ee8acf3f188b03e1",
+          "height": 640,
+          "width": 640
+        },
+        {
+          "url": "https://mosaic.scdn.co/300/ab67616d00001e02324258c62110743ca268ee53ab67616d00001e026cccf905420d68523d1768dfab67616d00001e0278b212d8b0c1cd104a333470ab67616d00001e02b546c8b5ee8acf3f188b03e1",
+          "height": 300,
+          "width": 300
+        },
+        {
+          "url": "https://mosaic.scdn.co/60/ab67616d00001e02324258c62110743ca268ee53ab67616d00001e026cccf905420d68523d1768dfab67616d00001e0278b212d8b0c1cd104a333470ab67616d00001e02b546c8b5ee8acf3f188b03e1",
+          "height": 60,
+          "width": 60
+        }
+      ],
+      "name": "AcousticTrench Covers",
+      "owner": {
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/1242736202"
+        },
+        "href": "https://api.spotify.com/v1/users/1242736202",
+        "id": "1242736202",
+        "type": "user",
+        "uri": "spotify:user:1242736202",
+        "display_name": "Trench"
+      },
+      "public": true,
+      "snapshot_id": "AAAAMPg2ky5SE4ipD+EkPgJwiGl3X/iK",
+      "tracks": {
+        "href": "https://api.spotify.com/v1/playlists/2JPtbt5sMp0HrHzzjESVeN/tracks",
+        "total": 17
+      },
+      "type": "playlist",
+      "uri": "spotify:playlist:2JPtbt5sMp0HrHzzjESVeN",
+      "primary_color": null
+    },
+    {
+      "collaborative": false,
+      "description": "This playlist brings together the best of pop – from catchy choruses to songs that stick in your head.  <a href=\"spotify:user:nordicmusic\">See all our playlists.</a>",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/playlist/0OD87lZJDaw883ofK7SFoC"
+      },
+      "href": "https://api.spotify.com/v1/playlists/0OD87lZJDaw883ofK7SFoC",
+      "id": "0OD87lZJDaw883ofK7SFoC",
+      "images": [
+        {
+          "url": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da847289d74d12a2b83dc542506d",
+          "height": null,
+          "width": null
+        }
+      ],
+      "name": "Curated Pop Playlist",
+      "owner": {
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/nordicmusic"
+        },
+        "href": "https://api.spotify.com/v1/users/nordicmusic",
+        "id": "nordicmusic",
+        "type": "user",
+        "uri": "spotify:user:nordicmusic",
+        "display_name": "NPS Music"
+      },
+      "public": true,
+      "snapshot_id": "AAAoMAyUHLpRoG7GMNyBY3p1kJxdz+Qd",
+      "tracks": {
+        "href": "https://api.spotify.com/v1/playlists/0OD87lZJDaw883ofK7SFoC/tracks",
+        "total": 213
+      },
+      "type": "playlist",
+      "uri": "spotify:playlist:0OD87lZJDaw883ofK7SFoC",
+      "primary_color": null
+    },
+    {
+      "collaborative": false,
+      "description": "",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/playlist/27ZvcdDLcH9m1Y68zXJ9x3"
+      },
+      "href": "https://api.spotify.com/v1/playlists/27ZvcdDLcH9m1Y68zXJ9x3",
+      "id": "27ZvcdDLcH9m1Y68zXJ9x3",
+      "images": [
+        {
+          "url": "https://mosaic.scdn.co/640/ab67616d00001e023cf8610f3182644b51fc74f4ab67616d00001e0280e5432053fe7b6850904782ab67616d00001e02862200e3175838660e3dfd09ab67616d00001e02ad9e4e04382316e972c4684c",
+          "height": 640,
+          "width": 640
+        },
+        {
+          "url": "https://mosaic.scdn.co/300/ab67616d00001e023cf8610f3182644b51fc74f4ab67616d00001e0280e5432053fe7b6850904782ab67616d00001e02862200e3175838660e3dfd09ab67616d00001e02ad9e4e04382316e972c4684c",
+          "height": 300,
+          "width": 300
+        },
+        {
+          "url": "https://mosaic.scdn.co/60/ab67616d00001e023cf8610f3182644b51fc74f4ab67616d00001e0280e5432053fe7b6850904782ab67616d00001e02862200e3175838660e3dfd09ab67616d00001e02ad9e4e04382316e972c4684c",
+          "height": 60,
+          "width": 60
+        }
+      ],
+      "name": "Dansk ",
+      "owner": {
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/gf3xxtswabnwnk9752yxuymas"
+        },
+        "href": "https://api.spotify.com/v1/users/gf3xxtswabnwnk9752yxuymas",
+        "id": "gf3xxtswabnwnk9752yxuymas",
+        "type": "user",
+        "uri": "spotify:user:gf3xxtswabnwnk9752yxuymas",
+        "display_name": "zhao"
+      },
+      "public": true,
+      "snapshot_id": "AAAAbOJvHFumNEGw0np4fmzXh25E0vTs",
+      "tracks": {
+        "href": "https://api.spotify.com/v1/playlists/27ZvcdDLcH9m1Y68zXJ9x3/tracks",
+        "total": 40
+      },
+      "type": "playlist",
+      "uri": "spotify:playlist:27ZvcdDLcH9m1Y68zXJ9x3",
+      "primary_color": null
+    }
+  ]
+}
