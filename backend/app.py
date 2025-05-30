@@ -127,13 +127,13 @@ def api_get_playlists():
     app.logger.debug("APP: Entered /api/playlists route")
 
     token_info = sp_oauth.get_cached_token()
-    # Attempt to refresh token if validation fails and a refresh token exists
+    # Check if the token exists and is valid
     if not token_info or not sp_oauth.validate_token(token_info):
+        # If the token is not valid, try to refresh it
         if token_info and token_info.get('refresh_token'):
             try:
                 app.logger.info("APP: /api/playlists - Attempting to refresh token.")
                 token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
-                # sp (Spotify client) should be updated by the auth_manager
                 app.logger.info("APP: /api/playlists - Token refreshed successfully.")
             except Exception as e:
                 app.logger.error(f"APP: /api/playlists - Failed to refresh token: {str(e)}")
@@ -152,6 +152,7 @@ def api_get_playlists():
         if playlists_result and playlists_result.get('items'):
             for item in playlists_result['items']:
                 image_url = None
+                # Get the first image URL if available
                 if item.get('images') and len(item['images']) > 0:
                     image_url = item['images'][0].get('url')
 
