@@ -44,16 +44,27 @@ sp = Spotify(auth_manager=sp_oauth)
 
 @app.route("/spotify/authorize")
 def home():
+    app.logger.debug("SPOTIPY: Entered /spotify/authorize (home route)")
     if not sp_oauth.validate_token(sp_oauth.get_cached_token()):
+        app.logger.debug("SPOTIPY: Token not valid or not found, getting auth URL.")
         auth_url = sp_oauth.get_authorize_url()
+        app.logger.debug(f"SPOTIPY: Generated Spotify auth_url: {auth_url}")
         return redirect(auth_url)
+    
+    app.logger.debug("SPOTIPY: Token is valid, redirecting to Svelte app frontend.")
     return redirect('http://localhost:5173/')
 
 @app.route("/callback")
 def callback():
-    sp_oauth.get_access_token(request.args['code'])
+    app.logger.debug("SPOTIPY: Entered /callback route") 
+    app.logger.debug(f"SPOTIPY: Request args received: {request.args}")
+
+    token_info = sp_oauth.get_access_token(request.args['code'])
+
+    app.logger.debug(f"SPOTIPY: Token info received: {'YES' if token_info else 'NO'}")
 
     spotify_user_profile = sp.current_user()
+    app.logger.debug(f"SPOTIPY: Fetched Spotify user profile: {spotify_user_profile}")
 
     user_info = {
         "name": spotify_user_profile['display_name'],
@@ -61,9 +72,11 @@ def callback():
         "id": spotify_user_profile['id'],
         "moderator": False
     }
+    app.logger.debug(f"SPOTIPY: Prepared user_info for session: {user_info}")
     session["user"] = user_info
+    app.logger.debug(f"SPOTIPY: User info stored in session. Session data: {session}")
 
-
+    app.logger.debug("SPOTIPY: Redirecting to Svelte app frontend from /callback.")
     return redirect("http://localhost:5173/")
 
 @app.route("/get_playlists")
