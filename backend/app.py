@@ -122,17 +122,58 @@ def callback():
     app.logger.debug("SPOTIPY: Redirecting to Svelte app frontend from /callback.")
     return redirect("http://localhost:5173/")
 
-@app.route("/get_playlists")
-def get_playlists():
-    if not sp_oauth.validate_token(sp_oauth.get_cached_token()):
-        auth_url = sp_oauth.get_authorize_url()
-        return redirect(auth_url)
-    
-    playlists = sp.current_user_playlists()
-    playlists_info = [(pl['name'], pl['external_urls']['spotify']) for pl in playlists['items']]
-    playlists_html = '<br>'.join([f'<a href="{url}">{name}</a>' for name, url in playlists_info])
+@app.route("/api/playlists")
+def api_get_playlists():
+    app.logger.debug("APP: Entered /api/playlists route")
 
-    return playlists_html
+    token_info = sp_oauth.get_cached_token()
+    # Attempt to refresh token if validation fails and a refresh token exists
+    if not token_info or not sp_oauth.validate_token(token_info):
+        if token_info and token_info.get('refresh_token'):
+            try:
+                app.logger.info("APP: /api/playlists - Attempting to refresh token.")
+                token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
+                # sp (Spotify client) should be updated by the auth_manager
+                app.logger.info("APP: /api/playlists - Token refreshed successfully.")
+            except Exception as e:
+                app.logger.error(f"APP: /api/playlists - Failed to refresh token: {str(e)}")
+                session.clear() # Clear session if refresh fails
+                return jsonify({"error": "Session expired, failed to refresh token. Please log in again."}), 401
+        else:
+            session.clear() # Clear session if no refresh token or initial validation fails
+            app.logger.warn("APP: /api/playlists - No valid token/refresh token. User needs to re-authenticate.")
+            return jsonify({"error": "User not authenticated or token expired. Please log in again."}), 401
+
+    try:
+        playlists_result = sp.current_user_playlists(limit=50) # Get up to 50 playlists
+        app.logger.debug(f"APP: /api/playlists - Playlists fetched from Spotify: {'Data received' if playlists_result else 'No data'}")
+
+        playlists_data = []
+        if playlists_result and playlists_result.get('items'):
+            for item in playlists_result['items']:
+                image_url = None
+                if item.get('images') and len(item['images']) > 0:
+                    image_url = item['images'][0].get('url')
+
+                playlist_info = {
+                    "id": item.get('id'),
+                    "name": item.get('name'),
+                    "url": item.get('external_urls', {}).get('spotify'),
+                    "imageUrl": image_url,
+                    "track_count": item.get('tracks', {}).get('total', 0)
+                }
+                playlists_data.append(playlist_info)
+
+        app.logger.debug(f"APP: /api/playlists - Processed {len(playlists_data)} playlists.")
+        return jsonify(playlists_data)
+
+    except Exception as e:
+        app.logger.error(f"APP: /api/playlists - Error fetching playlists: {str(e)}")
+        if hasattr(e, 'http_status') and e.http_status == 401: # Spotify API returned 401
+             session.clear() 
+             return jsonify({"error": "Spotify authorization error. Please log in again."}), 401
+        return jsonify({"error": "Failed to fetch playlists from Spotify"}), 500
+
 
 # This code is so that we can store "likes" and "dislikes" to MongoDB.
 # First the code checks if the user has a valid Spotify account/token. If they do, then the code will extract the "like" or the "dislike" from request.
