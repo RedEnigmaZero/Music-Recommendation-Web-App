@@ -28,7 +28,7 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY", "secret-dev-key")
 
 SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
-redirect_uri = 'http://127.0.0.1:8000/callback'
+redirect_uri = 'http://127.0.0.1:5173/'
 scope = 'playlist-read-private user-read-email'
 
 cache_handler = FlaskSessionCacheHandler(session)
@@ -53,6 +53,42 @@ def home():
     
     app.logger.debug("SPOTIPY: Token is valid, redirecting to Svelte app frontend.")
     return redirect('http://localhost:5173/')
+
+@app.route("/api/spotify/token", methods=['POST'])
+def spotify_token():
+    data = request.get_json()
+    code = data.get('code')
+    app.logger.debug(f"SPOTIPY: /api/spotify/token received code: {'YES' if code else 'NO'}")
+
+    if not code:
+        return jsonify({"error": "No code provided"}), 400
+    
+    try:
+        token_info = sp_oauth.get_access_token(code, check_cache=False)
+
+        if not token_info:
+            app.logger.error("SPOTIPY: Failed to get token info from Spotify from /api/spotify/token.")
+            return jsonify({"error": "Failed to get token info"}), 500
+        
+        app.logger.debug(f"SPOTIPY: /api/spotify/token - Token info received: {token_info}")
+        
+        
+        spotify_user_profile = sp.current_user()
+        app.logger.debug(f"SPOTIPY: /api/spotify/token - Fetched Spotify user profile: {spotify_user_profile}")
+
+        user_info = {
+            "name": spotify_user_profile['display_name'],
+            "email": spotify_user_profile['email'],
+            "id": spotify_user_profile['id'],
+            "moderator": False 
+        }
+        session["user"] = user_info 
+        app.logger.debug(f"SPOTIPY: /api/spotify/token - User info stored in session. Session data: {dict(session)}")
+        return jsonify({"success": True, "user": user_info})
+    except Exception as e:
+        app.logger.error(f"SPOTIPY: Error in /api/spotify/token: {str(e)}")
+        return jsonify({"error": "An error occurred during Spotify token exchange."}), 500
+        
 
 @app.route("/callback")
 def callback():
@@ -101,10 +137,15 @@ def get_playlists():
 
 @app.before_request
 def user():
+    app.logger.debug(f"APP: @before_request triggered for path: {request.path}")
+    app.logger.debug(f"APP: @before_request - Incoming request headers: {request.headers}") 
+    app.logger.debug(f"APP: @before_request - Full session data at start: {dict(session)}")
     if "user" in session:
         request.user = session["user"]
+        app.logger.debug(f"APP: @before_request - User successfully loaded from session: {request.user}")
     else:
         request.user = None
+        app.logger.debug("APP: @before_request - No 'user' key found in session for this request.")
 
 # The code down below is a route that is called after the user logs in through Dex.
 # The code should work by getting the user's name, email, and moderator status from the token from Dex.
@@ -155,6 +196,8 @@ def logout():
 
 @app.route("/api/me")
 def get_me():
+    app.logger.debug(f"APP: Entered /api/me. Current session data: {dict(session)}") 
+    app.logger.debug(f"APP: /api/me - request.user (set by @app.before_request) is: {request.user}")
     return jsonify(request.user)
 
 @app.route('/')
