@@ -5,6 +5,7 @@
   import Explore from "./Explore.svelte";
   import Search from "./Search.svelte";
   import Library from "./Library.svelte";
+  import initSpotifyIFrameAPI from "./lib/initSpotifyIFrameAPI";
 
   let isAuthenticated = false;
   let userInfo: User | null = null;
@@ -87,6 +88,9 @@
 
   onMount(async () => {
     await handleAuth();
+
+    // Init iframe API for music player in explore tab
+    initSpotifyIFrameAPI();
   });
 
   const DEX_CLIENT_ID = "Music-app";

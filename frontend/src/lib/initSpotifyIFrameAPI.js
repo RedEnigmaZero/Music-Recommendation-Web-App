@@ -1,6 +1,6 @@
 // To initialize spotify iFrameAPI
 // Function content is directly copied from https://open.spotify.com/embed/iframe-api/v1
-export default function initSpotify() {
+export default function initSpotifyIFrameAPI() {
     var scriptUrl = 'https://embed-cdn.spotifycdn.com/_next/static/iframe_api.04eab59592b341e5286c.js';
     var host = 'https://open.spotify.com';
     try {
