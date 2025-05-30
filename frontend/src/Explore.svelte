@@ -3,7 +3,7 @@
     import './styles/explore.css';
     import {onMount} from "svelte";
 
-    export let userInfo: User;
+    let userInfo: User = $props();
 
     // List of songs to be shown
     let tracks: String[] = [
@@ -319,9 +319,6 @@
 <main class="main-view explore-main-view">
     <header class="main-header">
         <h1>🔍 Explore Music</h1>
-        <a href="http://localhost:8000/logout">
-            <button class="logout-btn">Logout</button>
-        </a>
     </header>
 
     <section class="content explore-content">

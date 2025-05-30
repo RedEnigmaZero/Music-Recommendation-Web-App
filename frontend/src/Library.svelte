@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { User } from '../lib/User';
 
-    export let userInfo: User;
+    let userInfo: User = $props();
 </script>
 
 <svelte:head>
@@ -11,7 +11,6 @@
 <main class="main-view">
     <header class="main-header">
         <h1>📚 Your Library</h1>
-        <button class="logout-btn" on:click={logout}>Logout</button>
     </header>
 
     <section class="content">
