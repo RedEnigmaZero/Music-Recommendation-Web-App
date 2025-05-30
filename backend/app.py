@@ -8,6 +8,7 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime, timezone
 from jose import jwt
+import time
 
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyOAuth
@@ -29,7 +30,13 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY", "secret-dev-key")
 SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 redirect_uri = 'http://127.0.0.1:5173/'
-scope = 'playlist-read-private user-read-email'
+scope = (
+    'playlist-read-private '
+    'user-read-email '
+    'user-top-read '
+    'user-library-read '
+    'user-library-modify'
+)
 
 cache_handler = FlaskSessionCacheHandler(session)
 sp_oauth = SpotifyOAuth(
@@ -126,6 +133,43 @@ def get_playlists():
     playlists_html = '<br>'.join([f'<a href="{url}">{name}</a>' for name, url in playlists_info])
 
     return playlists_html
+
+# This code is so that we can store "likes" and "dislikes" to MongoDB.
+# First the code checks if the user has a valid Spotify account/token. If they do, then the code will extract the "like" or the "dislike" from request.
+# Then the code gets the user's Spotify ID, where MongoDB will either create or upload a document with their ratings along with the time it was made. 
+
+@app.route("/api/feedback/<track_id>", methods=["PUT"])
+def feedback(track_id):
+    if not sp_oauth.validate_token(sp_oauth.get_cached_token()):
+        return jsonify({"error": "Spotify login required"}), 500
+
+    rating = (request.json or {}).get("rating")
+    if rating not in {"like", "dislike"}:
+        return jsonify({"error": "Rating must be 'like' or 'dislike'"}), 400
+
+    user_id = sp.current_user()["id"]
+    db.userprefs.update_one(
+        {"_id": user_id},
+        {
+            "$set": {f"ratings.{track_id}": rating},
+            "$currentDate": {"updated": True},
+            "$setOnInsert": {"created": time.time()}
+        },
+        upsert=True
+    )
+    return ""
+
+# This code is so that the user can save a song to their Spotify account. 
+# First the code checks if the user has a valid Spotify account/token. If they do then the code adds the song to their Spotify account.  
+
+@app.route("/api/save/<track_id>", methods=["PUT"])
+def save_track(track_id):
+    if not sp_oauth.validate_token(sp_oauth.get_cached_token()):
+        return jsonify({"error": "Spotify login required"}), 500
+
+    sp.current_user_saved_tracks_add([track_id])
+    return ""
+
 
 # The code down below should give us the info from the user. It checks if a user is already logged in by looking for their data.
 # If the user is found in the session, then it will set the user's name, email, and moderator status.
