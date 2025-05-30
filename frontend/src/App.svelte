@@ -5,6 +5,7 @@
   import Explore from "./Explore.svelte";
   import Search from "./Search.svelte";
   import Library from "./Library.svelte";
+  import initSpotify from "./lib/initSpotify";
 
   let isAuthenticated = false;
   let userInfo: User | null = null;
@@ -13,6 +14,7 @@
   // Check for auth token or handle redirect response
   onMount(async () => {
     await getUserInfo();
+    initSpotify();
   });
 
   const DEX_CLIENT_ID = "Music-app";
