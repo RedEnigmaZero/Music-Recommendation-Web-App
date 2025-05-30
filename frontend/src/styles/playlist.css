@@ -1,0 +1,33 @@
+#playlist-container {
+    background-color: #e6e6e6;
+    padding: 1em;
+    border-radius: 0.3em;
+}
+
+#playlist-container > img {
+    width: 200px;
+    height: 200px;
+    border-radius: 0.3em;
+}
+
+#playlist-name {
+    color: #1b1b1b;
+    font-weight: 700;
+    padding: 0.5em 0 0.5em 0;
+    margin: 0;
+    width: 200px;
+    overflow-x: hidden;
+    text-wrap: nowrap;
+    text-overflow: ellipsis;
+}
+
+#playlist-description {
+    color: #333333;
+    font-weight: 300;
+    font-size: 12px;
+    width: 200px;
+    text-wrap: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+}
