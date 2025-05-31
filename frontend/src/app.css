@@ -208,3 +208,32 @@ button:focus-visible {
 	margin: 0;
 	padding: 0;
   }
+
+  .scroll-section {
+    margin-bottom: 2rem;
+  }
+  
+  .scroll-container {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+  }
+  
+  .album-card {
+    min-width: 160px;
+    background-color: #282828;
+    color: white;
+    border-radius: 8px;
+    padding: 0.5rem;
+    text-align: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .album-card:hover {
+    background-color: #1db954;
+    color: black;
+  }
+  

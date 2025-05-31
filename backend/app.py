@@ -1,6 +1,7 @@
 # Written by Navjeet for HW3
 
 from flask import Flask, jsonify, send_from_directory, request, session, redirect, url_for
+from flask import Response
 import os
 from flask_cors import CORS
 import requests
@@ -300,6 +301,17 @@ def login_frontend():
 @app.route("/test-mongo")
 def test_mongo():
     return jsonify({"collections": db.list_collection_names()})
+
+@app.route("/proxy-image")
+def proxy_image():
+    url = request.args.get("url")
+    if not url:
+        return "Missing URL", 400
+    try:
+        r = requests.get(url)
+        return Response(r.content, content_type=r.headers["Content-Type"])
+    except Exception as e:
+        return f"Error: {str(e)}", 500
 
 if __name__ == '__main__':
     debug_mode = os.getenv('FLASK_ENV') != 'production'
