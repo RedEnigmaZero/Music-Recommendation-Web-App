@@ -23,6 +23,7 @@
       window.history.replaceState({}, document.title, window.location.pathname);
       isAuthenticated = false;
       userInfo = null;
+      await new Promise(resolve => setTimeout(resolve, 200)); // 200ms wait
       isLoading = false;
       return;
     }
@@ -83,6 +84,11 @@
       );
       await getUserInfo();
     }
+
+    if (!isAuthenticated) {
+    await getUserInfo(); // fallback in case cookie just got set
+    }
+    
     isLoading = false;
   }
 
