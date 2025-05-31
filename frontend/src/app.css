@@ -231,6 +231,20 @@ button:focus-visible {
     cursor: pointer;
     transition: background-color 0.2s ease;
   }
+
+  .album-card p {
+      width: 160px;
+      overflow: hidden;
+      text-wrap: nowrap;
+      text-overflow: ellipsis;
+  }
+
+.stack-container {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding-bottom: 1rem;
+}
   
   .album-card:hover {
     background-color: #1db954;
