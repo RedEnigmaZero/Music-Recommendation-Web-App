@@ -1,207 +1,255 @@
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-.card {
-  padding: 2em;
-}
-
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+	font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+	line-height: 1.5;
+	font-weight: 400;
+  
+	color-scheme: light dark;
+	color: rgba(255, 255, 255, 0.87);
+	background-color: #242424;
+  
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+  }
+  
+  a {
+	font-weight: 500;
+	color: #646cff;
+	text-decoration: inherit;
   }
   a:hover {
-    color: #747bff;
+	color: #535bf2;
   }
+  
+  body {
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: center; 
+	align-items: center;     
+	min-width: 320px;
+	min-height: 100vh;
+  }
+  
+  
+  h1 {
+	font-size: 3.2em;
+	line-height: 1.1;
+  }
+  
+  .card {
+	padding: 2em;
+  }
+  
+  
   button {
-    background-color: #f9f9f9;
-  }
-}
-
-.login-container {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	min-height: 100vh;
-	text-align: center;
-  }
-  
-  .login-container h1 {
-	margin-bottom: 1rem;
-	font-size: 2.5rem;
-  }
-  
-  .login-container p {
-	font-size: 1.25rem;
-	margin-bottom: 1rem;
-  }
-  
-  .login-container button {
-	margin-top: 1rem;
-  }
-
-  .app-layout {
-	display: flex;
-	height: 100vh;
-	width: 100vw;
-  }
-  
-  .sidebar {
-	width: 220px;
+	border-radius: 8px;
+	border: 1px solid transparent;
+	padding: 0.6em 1.2em;
+	font-size: 1em;
+	font-weight: 500;
+	font-family: inherit;
 	background-color: #1a1a1a;
-	color: white;
-	padding: 2rem 1rem;
-	display: flex;
-	flex-direction: column;
-	align-items: center; /* Center items horizontally */
-	/* Remove justify-content: space-between */
-  }
-  
-  .sidebar h2 {
-	font-size: 1.5rem;
-	margin-bottom: 2rem;
-	text-align: center;
-  }
-  
-  .sidebar nav {
-	width: 100%; /* Make nav take full width */
-	/* Remove any margin-top if present */
-  }
-  
-  .sidebar nav ul {
-	list-style: none;
-	padding: 0;
-	margin: 0;
-	width: 100%; /* Make ul take full width */
-  }
-  
-  .sidebar nav li {
-	margin-bottom: 1rem;
-	text-align: center; /* Center the text */
-  }
-  
-  .sidebar nav button {
-	background: none;
-	border: none;
-	color: white;
-	font-size: 1.1rem;
 	cursor: pointer;
-	padding: 0.5rem 0;
-	width: 100%; /* Make buttons full width */
-	text-align: center; /* Center button text */
+	transition: border-color 0.25s;
+  }
+  button:hover {
+	border-color: #646cff;
+  }
+  button:focus,
+  button:focus-visible {
+	outline: 4px auto -webkit-focus-ring-color;
   }
   
-  .sidebar nav button:hover {
-	text-decoration: underline;
+  @media (prefers-color-scheme: light) {
+	:root {
+	  color: #213547;
+	  background-color: #ffffff;
+	}
+	a:hover {
+	  color: #747bff;
+	}
+	button {
+	  background-color: #f9f9f9;
+	}
   }
   
-  .main-view {
-	flex: 1;
-	padding: 2rem;
-	background-color: #f0f0f0;
-	overflow-y: auto;
-  }
+  .login-container {
+	  display: flex;
+	  flex-direction: column;
+	  align-items: center;
+	  justify-content: center;
+	  min-height: 100vh;
+	  text-align: center;
+	}
+	
+	.login-container h1 {
+	  margin-bottom: 1rem;
+	  font-size: 2.5rem;
+	}
+	
+	.login-container p {
+	  font-size: 1.25rem;
+	  margin-bottom: 1rem;
+	}
+	
+	.login-container button {
+	  margin-top: 1rem;
+	}
   
-  .main-view h1 {
-	font-size: 2rem;
-	margin-bottom: 1rem;
-  }
+	.app-layout {
+	  display: flex;
+	  height: 100vh;
+	  width: 100vw;
+	}
+	
+	.sidebar {
+	  width: 220px;
+	  background-color: #1a1a1a;
+	  color: white;
+	  padding: 2rem 1rem;
+	  display: flex;
+	  flex-direction: column;
+	  align-items: center; /* Center items horizontally */
+	  /* Remove justify-content: space-between */
+	}
+	
+	.sidebar h2 {
+	  font-size: 1.5rem;
+	  margin-bottom: 2rem;
+	  text-align: center;
+	}
+	
+	.sidebar nav {
+	  width: 100%; /* Make nav take full width */
+	  /* Remove any margin-top if present */
+	}
+	
+	.sidebar nav ul {
+	  list-style: none;
+	  padding: 0;
+	  margin: 0;
+	  width: 100%; /* Make ul take full width */
+	}
+	
+	.sidebar nav li {
+	  margin-bottom: 1rem;
+	  text-align: center; /* Center the text */
+	}
+	
+	.sidebar nav button {
+	  background: none;
+	  border: none;
+	  color: white;
+	  font-size: 1.1rem;
+	  cursor: pointer;
+	  padding: 0.5rem 0;
+	  width: 100%; /* Make buttons full width */
+	  text-align: center; /* Center button text */
+	}
+	
+	.sidebar nav button:hover {
+	  text-decoration: underline;
+	}
+	
+	.main-view {
+	  flex: 1;
+	  padding: 2rem;
+	  background-color: #f0f0f0;
+	  overflow-y: auto;
+	}
+	
+	.main-view h1 {
+	  font-size: 2rem;
+	  margin-bottom: 1rem;
+	}
+	
+	.app-layout {
+	  display: flex;
+	  min-height: 100vh;
+	}
+	
+	.main-view {
+	  flex: 1;
+	  padding: 2rem;
+	  background-color: #f0f0f0;
+	  color: black;
+	}
+	
+	.main-view h1 {
+	  font-size: 2rem;
+	  margin-bottom: 1rem;
+	}
+	
+	.main-header {
+	  display: flex;
+	  justify-content: space-between;
+	  align-items: center;
+	}
+	
+	.logout-btn {
+	  background-color: #d9534f;
+	  color: white;
+	  font-weight: bold;
+	  border: none;
+	  padding: 0.5rem 1rem;
+	  border-radius: 6px;
+	  cursor: pointer;
+	}
+	
+	.logout-btn:hover {
+	  background-color: #c9302c;
+	}
+	
+	html, body {
+	  height: 100%;
+	  width: 100%;
+	  margin: 0;
+	  padding: 0;
+	}
   
-  .app-layout {
-	display: flex;
-	min-height: 100vh;
-  }
+	.scroll-section {
+	  margin-bottom: 2rem;
+	}
+	
+	.scroll-container {
+	  display: flex;
+	  gap: 1rem;
+	  overflow-x: auto;
+	  padding-bottom: 1rem;
+	}
+	
+	.album-card {
+	  min-width: 160px;
+	  background-color: #282828;
+	  color: white;
+	  border-radius: 8px;
+	  padding: 0.5rem;
+	  text-align: center;
+	  flex-shrink: 0;
+	  cursor: pointer;
+	  transition: background-color 0.2s ease;
+	}
   
-  .main-view {
-	flex: 1;
-	padding: 2rem;
-	background-color: #f0f0f0;
-	color: black;
-  }
+	.album-card p {
+		width: 160px;
+		overflow: hidden;
+		text-wrap: nowrap;
+		text-overflow: ellipsis;
+	}
   
-  .main-view h1 {
-	font-size: 2rem;
-	margin-bottom: 1rem;
+  .stack-container {
+	  display: flex;
+	  gap: 1rem;
+	  flex-wrap: wrap;
+	  padding-bottom: 1rem;
   }
+	
+	.album-card:hover {
+	  background-color: #1db954;
+	  color: black;
+	}
+	
   
-  .main-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-  }
-  
-  .logout-btn {
-	background-color: #d9534f;
-	color: white;
-	font-weight: bold;
-	border: none;
-	padding: 0.5rem 1rem;
-	border-radius: 6px;
-	cursor: pointer;
-  }
-  
-  .logout-btn:hover {
-	background-color: #c9302c;
-  }
-  
-  html, body {
-	height: 100%;
-	width: 100%;
-	margin: 0;
-	padding: 0;
-  }
