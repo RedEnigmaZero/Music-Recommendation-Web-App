@@ -36,10 +36,13 @@
     let exploreReject: HTMLElement | null = null;
     let cardContainer: HTMLElement | null = null;
 
-    onMount(() => {
+    onMount(async () => {
         exploreAccept = document.getElementById("explore-accept");
         exploreReject = document.getElementById("explore-reject");
         cardContainer = document.getElementById("card-container");
+
+        // Get recommendations
+        await getRecommendations();
 
         // This function will be called once IFrameAPI from spotify is ready to be used
         window.onSpotifyIframeApiReady = (IFrameAPI: any) => {
@@ -133,7 +136,9 @@
 
     // Reset the state. Should be called after refreshing tracks array for new content
     // This function should only be called when there are no cards left.
-    function reset() {
+    async function reset() {
+        await getRecommendations();
+
         // Reset index and make initial cards
         currentIndex = 0;
         for (let i = 0; i < 3; i++) {
@@ -345,6 +350,23 @@
                 console.error(res);
                 return;
             }
+        } catch (error) {
+            console.error(error);
+            return;
+        }
+    }
+
+    async function getRecommendations() {
+        try {
+            const res = await fetch(`http://localhost:8000/api/recommendations`);
+            if (!res.ok) {
+                console.error("NetworkError");
+                console.error(res);
+                return;
+            }
+
+            const data = await res.json();
+            tracks = data.map(d => d.id);
         } catch (error) {
             console.error(error);
             return;
