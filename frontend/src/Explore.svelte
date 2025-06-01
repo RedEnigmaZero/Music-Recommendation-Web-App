@@ -15,6 +15,9 @@
 	// Store user's likes for better recommendations
 	let likedTracks: string[] = [];
 	
+	// Store liked artists for recommendations
+	let likedArtists: string[] = [];
+	
 	// Track which songs we've already shown to avoid duplicates
 	let shownTrackIds: Set<string> = new Set();
   
@@ -56,7 +59,7 @@
 		// Create three cards initially
 		for (let i = 0; i < 3; i++) {
 		  if (currentIndex + i < tracks.length) {
-			createCard(tracks[currentIndex]);
+			createCard(tracks[currentIndex + i]);
 		  }
 		}
 		updateCardPositions();
@@ -85,8 +88,8 @@
 	});
   
 	// Helper function to create card. Takes track id of a song
-	function createCard(trackId: String) {
-	  if (!cardContainer) return;
+	function createCard(trackId: String, trackIndex: number = currentIndex) {
+	  if (!cardContainer || !iframeAPI) return;
   
 	  // div that iframe will go in
 	  const exploreCard = document.createElement("div");
@@ -116,10 +119,12 @@
 	  );
   
 	  // Once card is made, push it to cards array
-	  cards.push({ element: exploreCard, id: trackId });
+	  cards.push({ element: exploreCard, id: trackId.toString() });
   
-	  // Increase the index for tail element
-	  currentIndex++;
+	  // Increase the index for tail element only if this is the next sequential card
+	  if (trackIndex === currentIndex) {
+		currentIndex++;
+	  }
 	}
   
 	// Show empty state when no cards left
@@ -127,6 +132,11 @@
 	  let emptyState = document.getElementById("empty-state");
 	  if (!emptyState) return;
 	  emptyState.classList.remove("hidden");
+	  
+	  // Hide the empty state since we'll load more tracks
+	  setTimeout(() => {
+		emptyState.classList.add("hidden");
+	  }, 100);
 	}
   
 	// Remove all ordering class and reassign
@@ -142,13 +152,18 @@
 	// Reset the state. Should be called after refreshing tracks array for new content
 	// This function should only be called when there are no cards left.
 	async function reset() {
+	  // Clear existing cards and controllers
+	  cards.forEach(card => card.element.remove());
+	  cards = [];
+	  embedControllers = [];
+	  
 	  await getMoreTracks();
   
 	  // Reset index and make initial cards
 	  currentIndex = 0;
 	  for (let i = 0; i < 3; i++) {
 		if (currentIndex + i < tracks.length) {
-		  createCard(tracks[currentIndex]);
+		  createCard(tracks[currentIndex + i]);
 		}
 	  }
 	  updateCardPositions();
@@ -168,6 +183,11 @@
 	  let isDragging = false;
   
 	  if (!cardContainer) return;
+	  
+	  // Remove existing event listeners to prevent duplicates
+	  cardContainer.onmousedown = null;
+	  cardContainer.ontouchstart = null;
+	  
 	  cardContainer.onmousedown = startDrag;
 	  cardContainer.ontouchstart = startDrag;
   
@@ -224,10 +244,11 @@
   
 		isDragging = false;
   
-		document.removeEventListener("mousemove", drag);
-		document.removeEventListener("touchmove", drag);
-		document.removeEventListener("mouseup", endDrag);
-		document.removeEventListener("touchend", endDrag);
+		// Clean up event listeners properly
+		document.onmousemove = null;
+		document.ontouchmove = null;
+		document.onmouseup = null;
+		document.ontouchend = null;
   
 		exploreReject.classList.remove("show-action");
 		exploreAccept.classList.remove("show-action");
@@ -242,7 +263,7 @@
 		} else {
 		  // Return to original position
 		  card.style.transition = "transform 0.5s";
-		  card.style.transform = "translateY(0) rotate(0deg)";
+		  card.style.transform = "translateX(0) translateY(0) rotate(0deg)";
   
 		  setTimeout(() => {
 			card.style.transition = "";
@@ -252,23 +273,32 @@
 	}
   
 	// Swipe right (like)
-	// We went through the code found at https://codepen.io/radenadri/pen/ZYYQKgN and adopted it
 	function swipeRight() {
 	  if (isAnimating || cards.length === 0) return;
   
 	  isAnimating = true;
 	  
-	  // Store the liked track for better recommendations
-	  const likedTrackId = cards[0].id;
-	  likedTracks.push(likedTrackId);
+	  // Store the liked track and its artists for better recommendations
+	  const currentTrack = trackDetails.find(track => track.id === cards[0].id);
+	  if (currentTrack) {
+		likedTracks.push(cards[0].id);
+		
+		// Add artists to liked artists list
+		currentTrack.artists?.forEach(artist => {
+		  if (!likedArtists.includes(artist.id)) {
+			likedArtists.push(artist.id);
+		  }
+		});
+	  }
   
 	  const card = cards[0].element;
 	  card.classList.add("swipe-right");
   
 	  setTimeout(async () => {
-		postRating(cards[0].id, "like");
+		await postRating(cards[0].id, "like");
 		card.remove();
 		cards.shift();
+		embedControllers.shift();
   
 		// Create new card if available
 		if (currentIndex < tracks.length) {
@@ -284,21 +314,20 @@
 		// Set up drag for new top card
 		if (cards.length > 0) {
 		  setupDrag(cards[0].element);
+		  // Start playing the new top card
+		  if (embedControllers.length > 0) {
+			embedControllers[0].play();
+		  }
 		} else {
 		  showEmptyState();
+		  await reset(); // Automatically load more when empty
 		}
   
 		isAnimating = false;
 	  }, 300);
-  
-	  embedControllers.shift();
-	  if (embedControllers.length > 0) {
-		embedControllers[0].play();
-	  }
 	}
   
 	// Swipe left (dislike)
-	// We went through the code found at https://codepen.io/radenadri/pen/ZYYQKgN and adopted it
 	function swipeLeft() {
 	  if (isAnimating || cards.length === 0) return;
   
@@ -308,9 +337,10 @@
 	  card.classList.add("swipe-left");
   
 	  setTimeout(async () => {
-		postRating(cards[0].id, "dislike");
+		await postRating(cards[0].id, "dislike");
 		card.remove();
 		cards.shift();
+		embedControllers.shift();
   
 		// Create new card if available
 		if (currentIndex < tracks.length) {
@@ -326,17 +356,17 @@
 		// Set up drag for new top card
 		if (cards.length > 0) {
 		  setupDrag(cards[0].element);
+		  // Start playing the new top card
+		  if (embedControllers.length > 0) {
+			embedControllers[0].play();
+		  }
 		} else {
 		  showEmptyState();
+		  await reset(); // Automatically load more when empty
 		}
   
 		isAnimating = false;
 	  }, 300);
-  
-	  embedControllers.shift();
-	  if (embedControllers.length > 0) {
-		embedControllers[0].play();
-	  }
 	}
   
 	async function postRating(trackId: string, rating: string) {
@@ -380,8 +410,13 @@
 	// Get tracks from Spotify API - this will populate the tracks array
 	async function getTracksFromSpotify() {
 	  try {
-		// Get track recommendations or popular tracks from your backend
-		const res = await fetch(`/api/spotify/discover-tracks`);
+		// First try to get personalized tracks if user has likes
+		let url = `/api/spotify/discover-tracks`;
+		if (likedTracks.length > 0) {
+		  url = `/api/spotify/personalized-tracks`;
+		}
+		
+		const res = await fetch(url);
 		if (!res.ok) {
 		  console.error("Error fetching tracks from Spotify");
 		  console.error(res);
@@ -390,50 +425,11 @@
   
 		const data = await res.json();
 		
-		// Extract track IDs and store full track details
-		const newTracks = data.tracks.filter(track => !shownTrackIds.has(track.id));
-		
-		tracks = newTracks.map(track => track.id);
-		trackDetails = newTracks;
-		
-		// Mark these tracks as shown
-		newTracks.forEach(track => shownTrackIds.add(track.id));
-		
-		console.log("Fetched tracks:", trackDetails);
-		
-	  } catch (error) {
-		console.error("Error in getTracksFromSpotify:", error);
-		return;
-	  }
-	}
-  
-	// Load more tracks based on user's likes
-	async function getMoreTracks() {
-	  try {
-		let url = '/api/spotify/discover-tracks';
-		
-		// If user has liked songs, get recommendations based on them
-		if (likedTracks.length > 0) {
-		  const seedTracks = likedTracks.slice(-5).join(','); // Use last 5 liked tracks as seeds
-		  url = `/api/spotify/recommendations?seed_tracks=${seedTracks}`;
-		}
-		
-		const res = await fetch(url);
-		if (!res.ok) {
-		  console.error("Error fetching more tracks");
-		  console.error(res);
-		  return;
-		}
-  
-		const data = await res.json();
-		
-		// Filter out tracks we've already shown
+		// Extract track IDs and store full track details - filter out duplicates
 		const newTracks = data.tracks.filter(track => !shownTrackIds.has(track.id));
 		
 		if (newTracks.length === 0) {
-		  console.log("No new tracks found, getting fresh discovery");
-		  // If no new tracks, fall back to general discovery
-		  await getTracksFromSpotify();
+		  console.log("No new tracks found, all were duplicates");
 		  return;
 		}
 		
@@ -443,13 +439,16 @@
 		// Mark these tracks as shown
 		newTracks.forEach(track => shownTrackIds.add(track.id));
 		
-		console.log(`Fetched ${newTracks.length} new tracks based on likes:`, trackDetails);
+		console.log(`Fetched ${newTracks.length} new tracks based on preferences:`, trackDetails);
 		
 	  } catch (error) {
-		console.error("Error in getMoreTracks:", error);
-		// Fall back to regular discovery
-		await getTracksFromSpotify();
+		console.error("Error in getTracksFromSpotify:", error);
 	  }
+	}
+	
+	// Get more tracks (replacement for getMoreTracks which was missing)
+	async function getMoreTracks() {
+	  await getTracksFromSpotify();
 	}
   
 	// Auto-load more tracks when running low
@@ -460,8 +459,13 @@
 		await getMoreTracks();
 		
 		// Create new cards if we got new tracks
-		for (let i = cards.length; i < 3 && currentIndex + i < tracks.length; i++) {
-		  createCard(tracks[currentIndex + i]);
+		for (let i = cards.length; i < 3 && currentIndex < tracks.length; i++) {
+		  createCard(tracks[currentIndex]);
+		}
+		
+		// Set up drag for the top card if we just created cards
+		if (cards.length > 0) {
+		  setupDrag(cards[0].element);
 		}
 	  }
 	}
