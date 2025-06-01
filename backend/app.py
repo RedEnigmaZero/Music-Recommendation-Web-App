@@ -267,13 +267,15 @@ def api_spotify_search():
 @app.route("/api/recommendations")
 def recommendations():
     app.logger.debug("APP: Entered /api/recommendations route")
-    sp = get_spotify_client()
-    if not sp:
-        return jsonify({"error": "Spotify login required"}), 401
+
+    auth_error = validate_user_token()
+    if auth_error:
+        return auth_error
 
     user_id = sp.current_user()["id"]
     doc       = db.userprefs.find_one({"_id": user_id}, {"ratings": 1}) or {}
     ratings   = doc.get("ratings", {})
+    
     likes     = [tid for tid, r in ratings.items() if r == "like"][:5]  
     dislikes  = {tid for tid, r in ratings.items() if r == "dislike"}
 
@@ -283,7 +285,7 @@ def recommendations():
         likes = [t["id"] for t in top["items"]] or ["4uLU6hMCjMI75M1A2tKUQC"] 
 
     app.logger.debug(f"APP: /api/recommendations - Calling Spotify recommendations with seed_tracks: {likes}")
-    raw  = sp.recommendations(seed_tracks=likes, limit=50)["tracks"]
+    raw  = sp.recommendations(seed_tracks=likes, limit=50).get("tracks")
 
     if not raw or "tracks" not in raw:
         app.logger.error("APP: /api/recommendations - Spotify API did not return 'tracks' in recommendations.")
