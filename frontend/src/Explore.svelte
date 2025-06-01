@@ -18,6 +18,15 @@
 	// Store liked artists for recommendations
 	let likedArtists: string[] = [];
 	
+	// Store disliked tracks to avoid similar songs
+	let dislikedTracks: string[] = [];
+	
+	// Store disliked artists to avoid recommending their songs
+	let dislikedArtists: string[] = [];
+	
+	// Store disliked genres to avoid similar music
+	let dislikedGenres: string[] = [];
+	
 	// Track which songs we've already shown to avoid duplicates
 	let shownTrackIds: Set<string> = new Set();
   
@@ -47,6 +56,9 @@
 	  exploreAccept = document.getElementById("explore-accept");
 	  exploreReject = document.getElementById("explore-reject");
 	  cardContainer = document.getElementById("card-container");
+  
+	  // Load user preferences from storage or API
+	  await loadUserPreferences();
   
 	  // Get tracks from Spotify API
 	  await getTracksFromSpotify();
@@ -86,6 +98,64 @@
 		}
 	  };
 	});
+  
+	// Load user preferences from your backend/storage
+	async function loadUserPreferences() {
+	  try {
+		const res = await fetch('/api/user/preferences');
+		if (res.ok) {
+		  const preferences = await res.json();
+		  likedTracks = preferences.likedTracks || [];
+		  likedArtists = preferences.likedArtists || [];
+		  dislikedTracks = preferences.dislikedTracks || [];
+		  dislikedArtists = preferences.dislikedArtists || [];
+		  dislikedGenres = preferences.dislikedGenres || [];
+		}
+	  } catch (error) {
+		console.error("Error loading user preferences:", error);
+	  }
+	}
+  
+	// Save user preferences to your backend/storage
+	async function saveUserPreferences() {
+	  try {
+		await fetch('/api/user/preferences', {
+		  method: 'PUT',
+		  headers: {
+			'Content-Type': 'application/json',
+		  },
+		  body: JSON.stringify({
+			likedTracks,
+			likedArtists,
+			dislikedTracks,
+			dislikedArtists,
+			dislikedGenres
+		  })
+		});
+	  } catch (error) {
+		console.error("Error saving user preferences:", error);
+	  }
+	}
+  
+	// Check if a track should be filtered out based on dislikes
+	function shouldFilterTrack(track: any): boolean {
+	  // Filter out disliked tracks
+	  if (dislikedTracks.includes(track.id)) {
+		return true;
+	  }
+	  
+	  // Filter out tracks by disliked artists
+	  if (track.artists && track.artists.some(artist => dislikedArtists.includes(artist.id))) {
+		return true;
+	  }
+	  
+	  // Filter out tracks with disliked genres (if genre data is available)
+	  if (track.genres && track.genres.some(genre => dislikedGenres.includes(genre))) {
+		return true;
+	  }
+	  
+	  return false;
+	}
   
 	// Helper function to create card. Takes track id of a song
 	function createCard(trackId: String, trackIndex: number = currentIndex) {
@@ -281,14 +351,32 @@
 	  // Store the liked track and its artists for better recommendations
 	  const currentTrack = trackDetails.find(track => track.id === cards[0].id);
 	  if (currentTrack) {
-		likedTracks.push(cards[0].id);
+		// Add to liked tracks if not already there
+		if (!likedTracks.includes(cards[0].id)) {
+		  likedTracks.push(cards[0].id);
+		}
 		
 		// Add artists to liked artists list
 		currentTrack.artists?.forEach(artist => {
 		  if (!likedArtists.includes(artist.id)) {
 			likedArtists.push(artist.id);
 		  }
+		  
+		  // Remove from disliked artists if they were there
+		  const dislikedIndex = dislikedArtists.indexOf(artist.id);
+		  if (dislikedIndex > -1) {
+			dislikedArtists.splice(dislikedIndex, 1);
+		  }
 		});
+		
+		// Remove from disliked tracks if it was there
+		const dislikedTrackIndex = dislikedTracks.indexOf(cards[0].id);
+		if (dislikedTrackIndex > -1) {
+		  dislikedTracks.splice(dislikedTrackIndex, 1);
+		}
+		
+		// Save preferences
+		saveUserPreferences();
 	  }
   
 	  const card = cards[0].element;
@@ -332,6 +420,40 @@
 	  if (isAnimating || cards.length === 0) return;
   
 	  isAnimating = true;
+  
+	  // Store the disliked track and its artists to avoid similar recommendations
+	  const currentTrack = trackDetails.find(track => track.id === cards[0].id);
+	  if (currentTrack) {
+		// Add to disliked tracks if not already there
+		if (!dislikedTracks.includes(cards[0].id)) {
+		  dislikedTracks.push(cards[0].id);
+		}
+		
+		// Add artists to disliked artists list (but only if they're not in liked artists)
+		currentTrack.artists?.forEach(artist => {
+		  if (!likedArtists.includes(artist.id) && !dislikedArtists.includes(artist.id)) {
+			dislikedArtists.push(artist.id);
+		  }
+		});
+		
+		// Add genres to disliked genres if available
+		if (currentTrack.genres) {
+		  currentTrack.genres.forEach(genre => {
+			if (!dislikedGenres.includes(genre)) {
+			  dislikedGenres.push(genre);
+			}
+		  });
+		}
+		
+		// Remove from liked tracks if it was there
+		const likedTrackIndex = likedTracks.indexOf(cards[0].id);
+		if (likedTrackIndex > -1) {
+		  likedTracks.splice(likedTrackIndex, 1);
+		}
+		
+		// Save preferences
+		saveUserPreferences();
+	  }
   
 	  const card = cards[0].element;
 	  card.classList.add("swipe-left");
@@ -410,10 +532,32 @@
 	// Get tracks from Spotify API - this will populate the tracks array
 	async function getTracksFromSpotify() {
 	  try {
-		// First try to get personalized tracks if user has likes
+		// Build URL with user preferences as query parameters
 		let url = `/api/spotify/discover-tracks`;
 		if (likedTracks.length > 0) {
 		  url = `/api/spotify/personalized-tracks`;
+		}
+		
+		// Add dislike filters as query parameters
+		const params = new URLSearchParams();
+		if (dislikedTracks.length > 0) {
+		  params.append('excludeTracks', dislikedTracks.join(','));
+		}
+		if (dislikedArtists.length > 0) {
+		  params.append('excludeArtists', dislikedArtists.join(','));
+		}
+		if (dislikedGenres.length > 0) {
+		  params.append('excludeGenres', dislikedGenres.join(','));
+		}
+		if (likedTracks.length > 0) {
+		  params.append('seedTracks', likedTracks.slice(-5).join(',')); // Use last 5 liked tracks as seeds
+		}
+		if (likedArtists.length > 0) {
+		  params.append('seedArtists', likedArtists.slice(-5).join(',')); // Use last 5 liked artists as seeds
+		}
+		
+		if (params.toString()) {
+		  url += `?${params.toString()}`;
 		}
 		
 		const res = await fetch(url);
@@ -425,11 +569,13 @@
   
 		const data = await res.json();
 		
-		// Extract track IDs and store full track details - filter out duplicates
-		const newTracks = data.tracks.filter(track => !shownTrackIds.has(track.id));
+		// Extract track IDs and store full track details - filter out duplicates and dislikes
+		const newTracks = data.tracks
+		  .filter(track => !shownTrackIds.has(track.id))
+		  .filter(track => !shouldFilterTrack(track));
 		
 		if (newTracks.length === 0) {
-		  console.log("No new tracks found, all were duplicates");
+		  console.log("No new tracks found after filtering");
 		  return;
 		}
 		
@@ -470,11 +616,6 @@
 	  }
 	}
   
-	// DEPRECATED: Keep for backward compatibility but replace with getTracksFromSpotify
-	async function getRecommendations() {
-	  console.warn("getRecommendations is deprecated, use getTracksFromSpotify instead");
-	  await getTracksFromSpotify();
-	}
   </script>
   
   <svelte:head>
