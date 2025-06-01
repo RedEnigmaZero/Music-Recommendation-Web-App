@@ -191,213 +191,301 @@ def api_get_playlists():
              return jsonify({"error": "Spotify authorization error. Please log in again."}), 401
         return jsonify({"error": "Failed to fetch playlists from Spotify"}), 500
 
-@app.route('/api/spotify/recommendations', methods=['GET'])
-def get_spotify_recommendations():
-    """
-    Get personalized recommendations based on seed tracks (liked songs)
-    """
-    # Validate user token
-    token_validation = validate_user_token()
-    if token_validation:
-        return token_validation
+# Add these routes to your Flask app
 
+@app.route('/api/spotify/discover-tracks')
+def discover_tracks():
+    """Get initial tracks from popular artists across different genres"""
+    error_response = validate_user_token()
+    if error_response:
+        return error_response
+    
     try:
-        # Get Spotify client
-        spotify_client = get_spotify_client()
-        if not spotify_client:
-            return jsonify({"error": "Unable to get Spotify client"}), 401
+        sp_client = get_spotify_client()
+        if not sp_client:
+            return jsonify({"error": "Failed to get Spotify client"}), 500
         
-        # Get seed tracks from query parameters
-        seed_tracks = request.args.get('seed_tracks', '')
-        if not seed_tracks:
-            return jsonify({"error": "Missing seed_tracks parameter"}), 400
+        # Get user's saved tracks to understand their taste
+        user_tracks = []
+        try:
+            saved_tracks = sp_client.current_user_saved_tracks(limit=50)
+            user_tracks = [track['track'] for track in saved_tracks['items']]
+        except Exception as e:
+            app.logger.info(f"No saved tracks found or error accessing them: {str(e)}")
+        
+        # If user has saved tracks, get artists from those
+        if user_tracks:
+            artist_ids = []
+            for track in user_tracks[:20]:  # Use first 20 tracks
+                for artist in track['artists']:
+                    if artist['id'] not in artist_ids:
+                        artist_ids.append(artist['id'])
             
-        seed_track_list = seed_tracks.split(',')[:5]  # Spotify allows max 5 seed tracks
+            # Get top tracks from these artists
+            all_tracks = []
+            for artist_id in artist_ids[:10]:  # Limit to 10 artists to avoid rate limits
+                try:
+                    top_tracks = sp_client.artist_top_tracks(artist_id, country='US')
+                    all_tracks.extend(top_tracks['tracks'][:3])  # Top 3 tracks per artist
+                except Exception as e:
+                    app.logger.error(f"Error getting top tracks for artist {artist_id}: {str(e)}")
+                    continue
+            
+            if all_tracks:
+                return jsonify({"tracks": all_tracks})
         
-        # Get recommendations based on seed tracks
-        recommendations = spotify_client.recommendations(
-            seed_tracks=seed_track_list,
-            limit=20,  # Get 20 recommendations
-            market='US'  # You can make this configurable
+        # Fallback: Get tracks from popular artists across different genres
+        # Define some popular artist IDs across different genres
+        popular_artists = [
+            "4NHQUGzhtTLFvgF5SZesLK",  # Tame Impala (Psychedelic Rock)
+            "06HL4z0CvFAxyc27GXpf02",  # Taylor Swift (Pop)
+            "3TVXtAsR1Inumwj472S9r4",  # Drake (Hip Hop)
+            "1HY2Jd0NmPuamShAr6KMms",  # Lady Gaga (Pop)
+            "4q3ewBCX7sLwd24UFkeCZp",  # Eminem (Hip Hop)
+            "1dfeR4HaWDbWqFHLkxsg1d",  # Queen (Rock)
+            "7dGJo4pcD2V6oG8kP0tJRR",  # Eminem (Alternative)
+            "0du5cEVh5yTK9QJze8zA0C",  # Bruno Mars (Pop/R&B)
+            "53XhwfbYqKCa1cC15pYq2q",  # Imagine Dragons (Alternative Rock)
+            "1uNFoZAHBGtllmzznpCI3s",  # Justin Bieber (Pop)
+        ]
+        
+        all_tracks = []
+        for artist_id in popular_artists:
+            try:
+                top_tracks = sp_client.artist_top_tracks(artist_id, country='US')
+                all_tracks.extend(top_tracks['tracks'][:2])  # Top 2 tracks per artist
+            except Exception as e:
+                app.logger.error(f"Error getting top tracks for artist {artist_id}: {str(e)}")
+                continue
+        
+        return jsonify({"tracks": all_tracks})
+        
+    except Exception as e:
+        app.logger.error(f"Error in discover_tracks: {str(e)}")
+        return jsonify({"error": "Failed to fetch tracks"}), 500
+
+@app.route('/api/spotify/artist-tracks/<artist_id>')
+def get_artist_tracks(artist_id):
+    """Get more tracks from a specific artist"""
+    error_response = validate_user_token()
+    if error_response:
+        return error_response
+    
+    try:
+        sp_client = get_spotify_client()
+        if not sp_client:
+            return jsonify({"error": "Failed to get Spotify client"}), 500
+        
+        # Get artist's top tracks
+        top_tracks = sp_client.artist_top_tracks(artist_id, country='US')
+        
+        # Get artist's albums and more tracks
+        albums = sp_client.artist_albums(artist_id, album_type='album,single', limit=10)
+        album_tracks = []
+        
+        for album in albums['items']:
+            try:
+                tracks = sp_client.album_tracks(album['id'], limit=5)
+                for track in tracks['items']:
+                    # Add album info to track
+                    track['album'] = {
+                        'id': album['id'],
+                        'name': album['name'],
+                        'images': album['images']
+                    }
+                    album_tracks.append(track)
+            except Exception as e:
+                app.logger.error(f"Error getting tracks from album {album['id']}: {str(e)}")
+                continue
+        
+        # Combine top tracks and album tracks
+        all_tracks = top_tracks['tracks'] + album_tracks
+        
+        return jsonify({"tracks": all_tracks})
+        
+    except Exception as e:
+        app.logger.error(f"Error getting artist tracks: {str(e)}")
+        return jsonify({"error": "Failed to fetch artist tracks"}), 500
+
+@app.route('/api/spotify/genre-tracks/<genre>')
+def get_genre_tracks(genre):
+    """Get tracks from artists in a specific genre"""
+    error_response = validate_user_token()
+    if error_response:
+        return error_response
+    
+    try:
+        sp_client = get_spotify_client()
+        if not sp_client:
+            return jsonify({"error": "Failed to get Spotify client"}), 500
+        
+        # Search for artists in the genre
+        search_results = sp_client.search(
+            q=f'genre:"{genre}"', 
+            type='artist', 
+            limit=10
         )
         
-        app.logger.info(f"Got {len(recommendations['tracks'])} recommendations based on {len(seed_track_list)} seed tracks")
-        
-        return jsonify({"tracks": recommendations['tracks']}), 200
-        
-    except Exception as e:
-        app.logger.error(f"Error getting recommendations from Spotify: {str(e)}")
-        return jsonify({"error": "Failed to get recommendations from Spotify"}), 500
-
-
-@app.route('/api/spotify/discover-tracks', methods=['GET'])
-def discover_spotify_tracks():
-    """
-    Discover tracks from Spotify using various methods like:
-    - User's top tracks
-    - Featured playlists
-    - New releases
-    - Recommendations based on user's taste
-    """
-    # Validate user token
-    token_validation = validate_user_token()
-    if token_validation:
-        return token_validation
-
-    try:
-        # Get Spotify client
-        spotify_client = get_spotify_client()
-        if not spotify_client:
-            return jsonify({"error": "Unable to get Spotify client"}), 401
-        
-        discovered_tracks = []
-        
-        try:
-            # Method 1: Get user's top tracks (medium term)
-            top_tracks = spotify_client.current_user_top_tracks(limit=10, time_range='medium_term')
-            discovered_tracks.extend(top_tracks['items'])
-            app.logger.info(f"Found {len(top_tracks['items'])} top tracks")
-        except Exception as e:
-            app.logger.warning(f"Could not fetch top tracks: {str(e)}")
-        
-        try:
-            # Method 2: Get featured playlists and sample tracks from them
-            featured_playlists = spotify_client.featured_playlists(limit=5)
-            for playlist in featured_playlists['playlists']['items']:
-                try:
-                    playlist_tracks = spotify_client.playlist_tracks(playlist['id'], limit=3)
-                    for item in playlist_tracks['items']:
-                        if item['track'] and item['track']['type'] == 'track':
-                            discovered_tracks.append(item['track'])
-                except Exception as e:
-                    app.logger.warning(f"Could not fetch tracks from playlist {playlist['name']}: {str(e)}")
-                    continue
-            app.logger.info(f"Added tracks from featured playlists")
-        except Exception as e:
-            app.logger.warning(f"Could not fetch featured playlists: {str(e)}")
-        
-        try:
-            # Method 3: Get new releases
-            new_releases = spotify_client.new_releases(limit=10)
-            for album in new_releases['albums']['items']:
-                try:
-                    album_tracks = spotify_client.album_tracks(album['id'], limit=2)
-                    for track in album_tracks['items']:
-                        # Need to get full track info since album_tracks returns simplified
-                        full_track = spotify_client.track(track['id'])
-                        discovered_tracks.append(full_track)
-                except Exception as e:
-                    app.logger.warning(f"Could not fetch tracks from album {album['name']}: {str(e)}")
-                    continue
-            app.logger.info(f"Added tracks from new releases")
-        except Exception as e:
-            app.logger.warning(f"Could not fetch new releases: {str(e)}")
-        
-        # If we have some tracks, try to get recommendations based on them
-        if discovered_tracks:
+        all_tracks = []
+        for artist in search_results['artists']['items']:
             try:
-                # Get a few seed tracks for recommendations
-                seed_tracks = [track['id'] for track in discovered_tracks[:5]]
-                recommendations = spotify_client.recommendations(seed_tracks=seed_tracks, limit=15)
-                discovered_tracks.extend(recommendations['tracks'])
-                app.logger.info(f"Added {len(recommendations['tracks'])} recommended tracks")
+                top_tracks = sp_client.artist_top_tracks(artist['id'], country='US')
+                all_tracks.extend(top_tracks['tracks'][:3])  # Top 3 tracks per artist
             except Exception as e:
-                app.logger.warning(f"Could not fetch recommendations: {str(e)}")
+                app.logger.error(f"Error getting top tracks for artist {artist['id']}: {str(e)}")
+                continue
         
-        # Remove duplicates and limit results
-        seen_ids = set()
-        unique_tracks = []
-        for track in discovered_tracks:
-            if track['id'] not in seen_ids:
-                seen_ids.add(track['id'])
-                unique_tracks.append(track)
-                if len(unique_tracks) >= 25:  # Limit to 25 tracks
-                    break
-        
-        if not unique_tracks:
-            # Fallback: Get some popular tracks if nothing else worked
-            app.logger.info("No tracks found, using fallback popular tracks")
-            # You can implement a fallback here or return an error
-            return jsonify({"error": "Could not discover any tracks"}), 404
-        
-        app.logger.info(f"Returning {len(unique_tracks)} unique tracks")
-        return jsonify({"tracks": unique_tracks}), 200
+        return jsonify({"tracks": all_tracks})
         
     except Exception as e:
-        app.logger.error(f"Error discovering tracks from Spotify: {str(e)}")
-        return jsonify({"error": "Failed to discover tracks from Spotify"}), 500
+        app.logger.error(f"Error getting genre tracks: {str(e)}")
+        return jsonify({"error": "Failed to fetch genre tracks"}), 500
 
-
-@app.route('/api/spotify/tracks', methods=['GET'])
-def get_spotify_tracks():
-    """
-    Get track details from Spotify API using the "Get Several Tracks" endpoint
-    Expects comma-separated track IDs in the 'ids' query parameter
-    """
-    # Validate user token
-    token_validation = validate_user_token()
-    if token_validation:
-        return token_validation
-
+@app.route('/api/spotify/similar-artists/<artist_id>')
+def get_similar_artists_tracks(artist_id):
+    """Get tracks from artists similar to the given artist"""
+    error_response = validate_user_token()
+    if error_response:
+        return error_response
+    
     try:
-        # Get the comma-separated track IDs from query parameters
-        track_ids = request.args.get('ids')
-        if not track_ids:
-            return jsonify({"error": "Missing 'ids' parameter"}), 400
+        sp_client = get_spotify_client()
+        if not sp_client:
+            return jsonify({"error": "Failed to get Spotify client"}), 500
         
-        # Validate that we don't exceed the 50 ID limit
-        ids_list = track_ids.split(',')
-        if len(ids_list) > 50:
-            return jsonify({"error": "Maximum 50 track IDs allowed"}), 400
+        # Get related artists
+        related_artists = sp_client.artist_related_artists(artist_id)
         
-        # Get Spotify client
-        spotify_client = get_spotify_client()
-        if not spotify_client:
-            return jsonify({"error": "Unable to get Spotify client"}), 401
+        all_tracks = []
+        for artist in related_artists['artists'][:10]:  # Limit to 10 related artists
+            try:
+                top_tracks = sp_client.artist_top_tracks(artist['id'], country='US')
+                all_tracks.extend(top_tracks['tracks'][:2])  # Top 2 tracks per artist
+            except Exception as e:
+                app.logger.error(f"Error getting top tracks for related artist {artist['id']}: {str(e)}")
+                continue
         
-        # Get market (country code) from request or default to US
-        market = request.args.get('market', 'US')
-        
-        # Make the API call to Spotify
-        tracks_data = spotify_client.tracks(tracks=ids_list, market=market)
-        
-        return jsonify(tracks_data), 200
+        return jsonify({"tracks": all_tracks})
         
     except Exception as e:
-        app.logger.error(f"Error fetching tracks from Spotify: {str(e)}")
-        return jsonify({"error": "Failed to fetch tracks from Spotify"}), 500
+        app.logger.error(f"Error getting similar artists tracks: {str(e)}")
+        return jsonify({"error": "Failed to fetch similar artists tracks"}), 500
 
-# This code is so that we can store "likes" and "dislikes" to MongoDB.
-# First the code checks if the user has a valid Spotify account/token. If they do, then the code will extract the "like" or the "dislike" from request.
-# Then the code gets the user's Spotify ID, where MongoDB will either create or upload a document with their ratings along with the time it was made. 
+# Store user preferences for better recommendations
+@app.route('/api/feedback/<track_id>', methods=['PUT'])
+def store_feedback(track_id):
+    """Store user feedback (like/dislike) for a track"""
+    error_response = validate_user_token()
+    if error_response:
+        return error_response
+    
+    try:
+        sp_client = get_spotify_client()
+        if not sp_client:
+            return jsonify({"error": "Failed to get Spotify client"}), 500
+        
+        # Get user info
+        user_info = sp_client.current_user()
+        user_id = user_info['id']
+        
+        data = request.get_json()
+        rating = data.get('rating')  # 'like' or 'dislike'
+        
+        if rating not in ['like', 'dislike']:
+            return jsonify({"error": "Invalid rating"}), 400
+        
+        # Get track info to store artist and genre data
+        track_info = sp_client.track(track_id)
+        
+        # Store feedback in database
+        feedback_data = {
+            "user_id": user_id,
+            "track_id": track_id,
+            "rating": rating,
+            "track_name": track_info['name'],
+            "artists": [{"id": artist['id'], "name": artist['name']} for artist in track_info['artists']],
+            "timestamp": datetime.now(timezone.utc)
+        }
+        
+        # Upsert feedback (update if exists, insert if doesn't)
+        db.user_feedback.update_one(
+            {"user_id": user_id, "track_id": track_id},
+            {"$set": feedback_data},
+            upsert=True
+        )
+        
+        return jsonify({"message": "Feedback stored successfully"})
+        
+    except Exception as e:
+        app.logger.error(f"Error storing feedback: {str(e)}")
+        return jsonify({"error": "Failed to store feedback"}), 500
 
-@app.route("/api/feedback/<track_id>", methods=["PUT"])
-def feedback(track_id):
-    app.logger.debug(f"APP: Entered /api/feedback/{track_id} route")
-
-    auth_error = validate_user_token()
-    if auth_error:
-        return auth_error
-
-    rating = (request.json or {}).get("rating")
-    if rating not in {"like", "dislike"}:
-        return jsonify({"error": "Rating must be 'like' or 'dislike'"}), 400
-
-    user_id = sp.current_user()["id"]
-    db.userprefs.update_one(
-        {"_id": user_id},
-        {
-            "$set": {f"ratings.{track_id}": rating},
-            "$currentDate": {"updated": True},
-            "$setOnInsert": {"created": time.time()}
-        },
-        upsert=True
-    )
-    return jsonify({"success": True, "message": "Feedback saved"}), 200
-
-# This code is so that the user can save a song to their Spotify account. 
-# First the code checks if the user has a valid Spotify account/token. If they do then the code adds the song to their Spotify account.  
-
+@app.route('/api/spotify/personalized-tracks')
+def get_personalized_tracks():
+    """Get tracks based on user's previous likes"""
+    error_response = validate_user_token()
+    if error_response:
+        return error_response
+    
+    try:
+        sp_client = get_spotify_client()
+        if not sp_client:
+            return jsonify({"error": "Failed to get Spotify client"}), 500
+        
+        # Get user info
+        user_info = sp_client.current_user()
+        user_id = user_info['id']
+        
+        # Get user's liked tracks from database
+        liked_feedback = list(db.user_feedback.find({
+            "user_id": user_id,
+            "rating": "like"
+        }).sort("timestamp", -1).limit(20))
+        
+        if not liked_feedback:
+            # If no likes yet, fall back to discover_tracks
+            return discover_tracks()
+        
+        # Extract artist IDs from liked tracks
+        artist_ids = []
+        for feedback in liked_feedback:
+            for artist in feedback['artists']:
+                if artist['id'] not in artist_ids:
+                    artist_ids.append(artist['id'])
+        
+        all_tracks = []
+        
+        # Get more tracks from liked artists
+        for artist_id in artist_ids[:10]:  # Limit to prevent rate limits
+            try:
+                top_tracks = sp_client.artist_top_tracks(artist_id, country='US')
+                all_tracks.extend(top_tracks['tracks'][:3])
+                
+                # Also get tracks from related artists
+                related_artists = sp_client.artist_related_artists(artist_id)
+                for related_artist in related_artists['artists'][:3]:  # 3 related artists
+                    related_top_tracks = sp_client.artist_top_tracks(related_artist['id'], country='US')
+                    all_tracks.extend(related_top_tracks['tracks'][:2])  # 2 tracks each
+                    
+            except Exception as e:
+                app.logger.error(f"Error getting personalized tracks for artist {artist_id}: {str(e)}")
+                continue
+        
+        # Remove duplicates based on track ID
+        seen_tracks = set()
+        unique_tracks = []
+        for track in all_tracks:
+            if track['id'] not in seen_tracks:
+                seen_tracks.add(track['id'])
+                unique_tracks.append(track)
+        
+        return jsonify({"tracks": unique_tracks})
+        
+    except Exception as e:
+        app.logger.error(f"Error getting personalized tracks: {str(e)}")
+        return jsonify({"error": "Failed to fetch personalized tracks"}), 500
+    
+	
 @app.route("/api/save/<track_id>", methods=["PUT"])
 def save_track(track_id):
     app.logger.debug(f"APP: Entered /api/save/{track_id} route")
