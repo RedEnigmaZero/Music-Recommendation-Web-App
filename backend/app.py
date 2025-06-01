@@ -54,6 +54,19 @@ sp_oauth = SpotifyOAuth(
 # It will use sp_oauth to automatically handle getting the token and refreshing it
 sp = Spotify(auth_manager=sp_oauth)
 
+def store_token(token_info: dict):
+    session["token_info"] = token_info
+    session.permanent = True    
+
+def get_spotify_client() -> Spotify | None:
+    token = session.get("token_info")
+    if not token:
+        return None
+    if sp_oauth.is_token_expired(token):
+        token = sp_oauth.refresh_access_token(token["refresh_token"])
+        store_token(token)
+    return Spotify(auth=token["access_token"])
+
 # Helper function to check if the user is logged in
 def validate_user_token():
     token_info = sp_oauth.get_cached_token()
@@ -251,6 +264,32 @@ def api_spotify_search():
              return jsonify({"error": "Spotify authorization error during search. Please log in again."}), 401
         return jsonify({"error": "Failed to perform search on Spotify"}), 500
 
+@app.route("/api/recommendations")
+def recommendations():
+    sp = get_spotify_client()
+    if not sp:
+        return jsonify({"error": "Spotify login required"}), 401
+
+    user_id = sp.current_user()["id"]
+    doc       = db.userprefs.find_one({"_id": user_id}, {"ratings": 1}) or {}
+    ratings   = doc.get("ratings", {})
+    likes     = [tid for tid, r in ratings.items() if r == "like"][:5]  
+    dislikes  = {tid for tid, r in ratings.items() if r == "dislike"}
+
+    if not likes:
+        top  = sp.current_user_top_tracks(limit=5, time_range="medium_term")
+        likes = [t["id"] for t in top["items"]] or ["4uLU6hMCjMI75M1A2tKUQC"] 
+
+    raw  = sp.recommendations(seed_tracks=likes, limit=50)["tracks"]
+    tracks = [t for t in raw if t["id"] not in dislikes][:20]
+
+    return jsonify([{
+        "id":       t["id"],
+        "name":     t["name"],
+        "artists":  ", ".join(a["name"] for a in t["artists"]),
+        "albumArt": t["album"]["images"][0]["url"] if t["album"]["images"] else None,
+        "preview":  t["preview_url"],
+    } for t in tracks])
 
 # This code is so that we can store "likes" and "dislikes" to MongoDB.
 # First the code checks if the user has a valid Spotify account/token. If they do, then the code will extract the "like" or the "dislike" from request.
