@@ -440,6 +440,225 @@ def login_frontend():
 def test_mongo():
     return jsonify({"collections": db.list_collection_names()})
 
+@app.route("/api/browse-categories")
+def api_get_browse_categories():
+    app.logger.debug("APP: Entered /api/browse-categories route")
+
+    auth_error = validate_user_token()
+    if auth_error:
+        return auth_error
+
+    # Get query parameters with defaults
+    limit = int(request.args.get('limit', 20))  # Default to 20, max 50
+    offset = int(request.args.get('offset', 0))  # Default to 0
+    locale = request.args.get('locale', None)  # Optional locale parameter
+    
+    # Ensure limit is within Spotify's bounds
+    limit = min(max(limit, 1), 50)
+
+    try:
+        # Call Spotify's browse categories endpoint
+        # Build parameters dictionary
+        params = {
+            'limit': limit,
+            'offset': offset
+        }
+        if locale:
+            params['locale'] = locale
+
+        categories_result = sp.categories(**params)
+        app.logger.debug(f"APP: /api/browse-categories - Categories fetched from Spotify: {'Data received' if categories_result else 'No data'}")
+
+        categories_data = []
+        if categories_result and categories_result.get('categories') and categories_result['categories'].get('items'):
+            for item in categories_result['categories']['items']:
+                # Get the first icon URL if available
+                icon_url = None
+                if item.get('icons') and len(item['icons']) > 0:
+                    icon_url = item['icons'][0].get('url')
+
+                category_info = {
+                    "id": item.get('id'),
+                    "name": item.get('name'),
+                    "href": item.get('href'),
+                    "icons": item.get('icons', []),
+                    "image": icon_url  # For easier frontend access
+                }
+                categories_data.append(category_info)
+
+        app.logger.debug(f"APP: /api/browse-categories - Processed {len(categories_data)} categories.")
+        
+        # Return the data in a format similar to your existing endpoints
+        categories_info = categories_result.get('categories', {}) if categories_result else {}
+        return jsonify({
+            "items": categories_data,
+            "total": categories_info.get('total', 0),
+            "limit": categories_info.get('limit', limit),
+            "offset": categories_info.get('offset', offset),
+            "next": categories_info.get('next'),
+            "previous": categories_info.get('previous'),
+            "href": categories_info.get('href')
+        })
+
+    except Exception as e:
+        app.logger.error(f"APP: /api/browse-categories - Error fetching browse categories: {str(e)}")
+        if hasattr(e, 'http_status') and e.http_status == 401:  # Spotify API returned 401
+            session.clear() 
+            return jsonify({"error": "Spotify authorization error. Please log in again."}), 401
+        return jsonify({"error": "Failed to fetch browse categories from Spotify"}), 500
+
+@app.route("/api/user-tracks")
+def api_get_user_tracks():
+    app.logger.debug("APP: Entered /api/user-tracks route")
+
+    auth_error = validate_user_token()
+    if auth_error:
+        return auth_error
+
+    # Get query parameters with defaults
+    limit = int(request.args.get('limit', 20))  # Default to 20, max 50
+    offset = int(request.args.get('offset', 0))  # Default to 0
+    
+    # Ensure limit is within Spotify's bounds
+    limit = min(max(limit, 1), 50)
+
+    try:
+        # First try to get user's saved tracks (using existing scope user-library-read)
+        saved_tracks_result = sp.current_user_saved_tracks(limit=limit, offset=offset)
+        app.logger.debug(f"APP: /api/user-tracks - User's saved tracks fetched from Spotify: {'Data received' if saved_tracks_result else 'No data'}")
+
+        tracks_data = []
+        if saved_tracks_result and saved_tracks_result.get('items'):
+            for item in saved_tracks_result['items']:
+                track = item.get('track', {})
+                album = track.get('album', {})
+                
+                # Get the first image URL if available
+                image_url = None
+                if album.get('images') and len(album['images']) > 0:
+                    image_url = album['images'][0].get('url')
+
+                track_info = {
+                    "id": track.get('id'),
+                    "name": track.get('name'),
+                    "artists": ", ".join(artist.get('name', '') for artist in track.get('artists', [])),
+                    "album_name": album.get('name'),
+                    "image": image_url,
+                    "added_at": item.get('added_at'),
+                    "duration_ms": track.get('duration_ms'),
+                    "url": track.get('external_urls', {}).get('spotify'),
+                    "preview_url": track.get('preview_url'),
+                    "popularity": track.get('popularity', 0)
+                }
+                tracks_data.append(track_info)
+
+        # If no saved tracks, fall back to top tracks (using existing scope user-top-read)
+        if not tracks_data:
+            app.logger.debug("APP: /api/user-tracks - No saved tracks found, falling back to top tracks")
+            top_tracks_result = sp.current_user_top_tracks(limit=limit, time_range="short_term")
+            
+            if top_tracks_result and top_tracks_result.get('items'):
+                for track in top_tracks_result['items']:
+                    album = track.get('album', {})
+                    
+                    # Get the first image URL if available
+                    image_url = None
+                    if album.get('images') and len(album['images']) > 0:
+                        image_url = album['images'][0].get('url')
+
+                    track_info = {
+                        "id": track.get('id'),
+                        "name": track.get('name'),
+                        "artists": ", ".join(artist.get('name', '') for artist in track.get('artists', [])),
+                        "album_name": album.get('name'),
+                        "image": image_url,
+                        "added_at": None,  # Top tracks don't have added_at
+                        "duration_ms": track.get('duration_ms'),
+                        "url": track.get('external_urls', {}).get('spotify'),
+                        "preview_url": track.get('preview_url'),
+                        "popularity": track.get('popularity', 0)
+                    }
+                    tracks_data.append(track_info)
+
+        app.logger.debug(f"APP: /api/user-tracks - Processed {len(tracks_data)} user tracks.")
+        
+        # Return the data in a format consistent with your existing endpoints
+        return jsonify({
+            "items": tracks_data,
+            "total": len(tracks_data),
+            "limit": limit,
+            "offset": offset,
+            "source": "saved_tracks" if saved_tracks_result and saved_tracks_result.get('items') else "top_tracks"
+        })
+
+    except Exception as e:
+        app.logger.error(f"APP: /api/user-tracks - Error fetching user tracks: {str(e)}")
+        if hasattr(e, 'http_status') and e.http_status == 401:  # Spotify API returned 401
+            session.clear() 
+            return jsonify({"error": "Spotify authorization error. Please log in again."}), 401
+        return jsonify({"error": "Failed to fetch user tracks from Spotify"}), 500
+
+@app.route("/api/new-releases")
+def api_get_new_releases():
+    app.logger.debug("APP: Entered /api/new-releases route")
+
+    auth_error = validate_user_token()
+    if auth_error:
+        return auth_error
+
+    # Get query parameters with defaults
+    limit = int(request.args.get('limit', 20))  # Default to 20, max 50
+    offset = int(request.args.get('offset', 0))  # Default to 0
+    
+    # Ensure limit is within Spotify's bounds
+    limit = min(max(limit, 1), 50)
+
+    try:
+        # Call Spotify's browse new releases endpoint
+        new_releases_result = sp.new_releases(limit=limit, offset=offset)
+        app.logger.debug(f"APP: /api/new-releases - New releases fetched from Spotify: {'Data received' if new_releases_result else 'No data'}")
+
+        releases_data = []
+        if new_releases_result and new_releases_result.get('albums') and new_releases_result['albums'].get('items'):
+            for item in new_releases_result['albums']['items']:
+                image_url = None
+                # Get the first image URL if available
+                if item.get('images') and len(item['images']) > 0:
+                    image_url = item['images'][0].get('url')
+
+                release_info = {
+                    "id": item.get('id'),
+                    "name": item.get('name'),
+                    "artists": ", ".join(artist.get('name', '') for artist in item.get('artists', [])),
+                    "album_type": item.get('album_type'),
+                    "release_date": item.get('release_date'),
+                    "total_tracks": item.get('total_tracks'),
+                    "url": item.get('external_urls', {}).get('spotify'),
+                    "image": image_url,
+                    "available_markets": item.get('available_markets', [])
+                }
+                releases_data.append(release_info)
+
+        app.logger.debug(f"APP: /api/new-releases - Processed {len(releases_data)} new releases.")
+        
+        # Return the data in a format similar to your existing endpoints
+        return jsonify({
+            "items": releases_data,
+            "total": new_releases_result.get('albums', {}).get('total', 0),
+            "limit": limit,
+            "offset": offset,
+            "next": new_releases_result.get('albums', {}).get('next'),
+            "previous": new_releases_result.get('albums', {}).get('previous')
+        })
+
+    except Exception as e:
+        app.logger.error(f"APP: /api/new-releases - Error fetching new releases: {str(e)}")
+        if hasattr(e, 'http_status') and e.http_status == 401:  # Spotify API returned 401
+            session.clear() 
+            return jsonify({"error": "Spotify authorization error. Please log in again."}), 401
+        return jsonify({"error": "Failed to fetch new releases from Spotify"}), 500
+
 if __name__ == '__main__':
     debug_mode = os.getenv('FLASK_ENV') != 'production'
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)),debug=debug_mode)
+
