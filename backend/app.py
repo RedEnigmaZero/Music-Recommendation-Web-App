@@ -266,6 +266,7 @@ def api_spotify_search():
 
 @app.route("/api/recommendations")
 def recommendations():
+    app.logger.debug("APP: Entered /api/recommendations route")
     sp = get_spotify_client()
     if not sp:
         return jsonify({"error": "Spotify login required"}), 401
@@ -277,11 +278,22 @@ def recommendations():
     dislikes  = {tid for tid, r in ratings.items() if r == "dislike"}
 
     if not likes:
+        app.logger.debug("APP: /api/recommendations - No likes found, using top tracks.")
         top  = sp.current_user_top_tracks(limit=5, time_range="medium_term")
         likes = [t["id"] for t in top["items"]] or ["4uLU6hMCjMI75M1A2tKUQC"] 
 
+    app.logger.debug(f"APP: /api/recommendations - Calling Spotify recommendations with seed_tracks: {likes}")
     raw  = sp.recommendations(seed_tracks=likes, limit=50)["tracks"]
-    tracks = [t for t in raw if t["id"] not in dislikes][:20]
+
+    if not raw or "tracks" not in raw:
+        app.logger.error("APP: /api/recommendations - Spotify API did not return 'tracks' in recommendations.")
+        return jsonify([]) # Return empty list if no tracks found or error in response structure
+    
+    raw_tracks = raw["tracks"]
+
+
+    tracks = [t for t in raw_tracks if t and t.get ("id") and t["id"] not in dislikes][:20]
+
 
     return jsonify([{
         "id":       t["id"],
@@ -289,7 +301,7 @@ def recommendations():
         "artists":  ", ".join(a["name"] for a in t["artists"]),
         "albumArt": t["album"]["images"][0]["url"] if t["album"]["images"] else None,
         "preview":  t["preview_url"],
-    } for t in tracks])
+    } for t in tracks if t])
 
 # This code is so that we can store "likes" and "dislikes" to MongoDB.
 # First the code checks if the user has a valid Spotify account/token. If they do, then the code will extract the "like" or the "dislike" from request.
@@ -297,6 +309,8 @@ def recommendations():
 
 @app.route("/api/feedback/<track_id>", methods=["PUT"])
 def feedback(track_id):
+    app.logger.debug(f"APP: Entered /api/feedback/{track_id} route")
+
     auth_error = validate_user_token()
     if auth_error:
         return auth_error
@@ -322,6 +336,8 @@ def feedback(track_id):
 
 @app.route("/api/save/<track_id>", methods=["PUT"])
 def save_track(track_id):
+    app.logger.debug(f"APP: Entered /api/save/{track_id} route")
+
     auth_error = validate_user_token()
     if auth_error:
         return auth_error
