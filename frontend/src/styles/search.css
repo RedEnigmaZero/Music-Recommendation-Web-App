@@ -118,6 +118,8 @@
   }
 
   .result-item {
+    display: flex;
+    align-items: center;
     background-color: #181818;
     border-radius: 8px;
     transition: background-color 0.3s;
