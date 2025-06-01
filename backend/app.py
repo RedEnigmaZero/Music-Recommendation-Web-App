@@ -191,119 +191,181 @@ def api_get_playlists():
              return jsonify({"error": "Spotify authorization error. Please log in again."}), 401
         return jsonify({"error": "Failed to fetch playlists from Spotify"}), 500
 
-
-@app.route("/api/spotify/search")
-def api_spotify_search():
-    app.logger.debug("APP: Entered /api/spotify/search route")
-
-    auth_error = validate_user_token()
-    if auth_error:
-        return auth_error
-
-    query = request.args.get('q')
-    # Default to searching for tracks, artists, and albums if no specific type is given
-    # Types should be a comma-separated string, e.g., "track,artist,album"
-    search_types_str = request.args.get('type', 'track,artist,album')
-    search_types_list = [t.strip() for t in search_types_str.split(',')]
-    limit_per_type = int(request.args.get('limit', 10)) # How many results per type
-
-    if not query:
-        app.logger.warn("APP: /api/spotify/search - No query provided.")
-        return jsonify({"error": "Search query parameter 'q' is required"}), 400
-
-    app.logger.debug(f"APP: /api/spotify/search - Query: '{query}', Types: {search_types_list}, Limit: {limit_per_type}")
+@app.route('/api/spotify/recommendations', methods=['GET'])
+def get_spotify_recommendations():
+    """
+    Get personalized recommendations based on seed tracks (liked songs)
+    """
+    # Validate user token
+    token_validation = validate_user_token()
+    if token_validation:
+        return token_validation
 
     try:
-        # The sp.search method can take a list of types
-        results = sp.search(q=query, type=search_types_list, limit=limit_per_type)
-        app.logger.debug("APP: /api/spotify/search - Search results from Spotify received.")
+        # Get Spotify client
+        spotify_client = get_spotify_client()
+        if not spotify_client:
+            return jsonify({"error": "Unable to get Spotify client"}), 401
         
-        # Process results to send a cleaner structure if desired, or send as is
-        # Spotipy returns a dict with keys like 'tracks', 'artists', 'albums',
-        # each containing a Paging Object with an 'items' list.
-        
-        # Example of structuring the response:
-        processed_results = {}
-        if results:
-            if 'tracks' in results and results['tracks']:
-                processed_results['tracks'] = [{
-                    "id": item.get('id'),
-                    "name": item.get('name'),
-                    "artists": [{"name": artist.get('name'), "id": artist.get('id')} for artist in item.get('artists', [])],
-                    "album_name": item.get('album', {}).get('name'),
-                    "image_url": item.get('album', {}).get('images')[0].get('url') if item.get('album', {}).get('images') else None,
-                    "url": item.get('external_urls', {}).get('spotify')
-                } for item in results['tracks'].get('items', [])]
+        # Get seed tracks from query parameters
+        seed_tracks = request.args.get('seed_tracks', '')
+        if not seed_tracks:
+            return jsonify({"error": "Missing seed_tracks parameter"}), 400
             
-            if 'artists' in results and results['artists']:
-                processed_results['artists'] = [{
-                    "id": item.get('id'),
-                    "name": item.get('name'),
-                    "image_url": item.get('images')[0].get('url') if item.get('images') else None,
-                    "genres": item.get('genres', []),
-                    "url": item.get('external_urls', {}).get('spotify')
-                } for item in results['artists'].get('items', [])]
-
-            if 'albums' in results and results['albums']:
-                 processed_results['albums'] = [{
-                    "id": item.get('id'),
-                    "name": item.get('name'),
-                    "artists": [{"name": artist.get('name'), "id": artist.get('id')} for artist in item.get('artists', [])],
-                    "image_url": item.get('images')[0].get('url') if item.get('images') else None,
-                    "release_date": item.get('release_date'),
-                    "total_tracks": item.get('total_tracks'),
-                    "url": item.get('external_urls', {}).get('spotify')
-                } for item in results['albums'].get('items', [])]
-
-        return jsonify(processed_results)
-
+        seed_track_list = seed_tracks.split(',')[:5]  # Spotify allows max 5 seed tracks
+        
+        # Get recommendations based on seed tracks
+        recommendations = spotify_client.recommendations(
+            seed_tracks=seed_track_list,
+            limit=20,  # Get 20 recommendations
+            market='US'  # You can make this configurable
+        )
+        
+        app.logger.info(f"Got {len(recommendations['tracks'])} recommendations based on {len(seed_track_list)} seed tracks")
+        
+        return jsonify({"tracks": recommendations['tracks']}), 200
+        
     except Exception as e:
-        app.logger.error(f"APP: /api/spotify/search - Error during Spotify search: {str(e)}")
-        if hasattr(e, 'http_status') and e.http_status == 401:
-             session.clear()
-             return jsonify({"error": "Spotify authorization error during search. Please log in again."}), 401
-        return jsonify({"error": "Failed to perform search on Spotify"}), 500
-
-@app.route("/api/recommendations")
-def recommendations():
-    app.logger.debug("APP: Entered /api/recommendations route")
-
-    auth_error = validate_user_token()
-    if auth_error:
-        return auth_error
-
-    user_id = sp.current_user()["id"]
-    doc       = db.userprefs.find_one({"_id": user_id}, {"ratings": 1}) or {}
-    ratings   = doc.get("ratings", {})
-    
-    likes     = [tid for tid, r in ratings.items() if r == "like"][:5]  
-    dislikes  = {tid for tid, r in ratings.items() if r == "dislike"}
-
-    if not likes:
-        app.logger.debug("APP: /api/recommendations - No likes found, using top tracks.")
-        top  = sp.current_user_top_tracks(limit=5, time_range="medium_term")
-        likes = [t["id"] for t in top["items"]] or ["4uLU6hMCjMI75M1A2tKUQC"] 
-
-    app.logger.debug(f"APP: /api/recommendations - Calling Spotify recommendations with seed_tracks: {likes}")
-    raw  = sp.recommendations(seed_tracks=likes, limit=50).get("tracks")
-
-    if not raw or "tracks" not in raw:
-        app.logger.error("APP: /api/recommendations - Spotify API did not return 'tracks' in recommendations.")
-        return jsonify([]) # Return empty list if no tracks found or error in response structure
-    
-    raw_tracks = raw["tracks"]
+        app.logger.error(f"Error getting recommendations from Spotify: {str(e)}")
+        return jsonify({"error": "Failed to get recommendations from Spotify"}), 500
 
 
-    tracks = [t for t in raw_tracks if t and t.get ("id") and t["id"] not in dislikes][:20]
+@app.route('/api/spotify/discover-tracks', methods=['GET'])
+def discover_spotify_tracks():
+    """
+    Discover tracks from Spotify using various methods like:
+    - User's top tracks
+    - Featured playlists
+    - New releases
+    - Recommendations based on user's taste
+    """
+    # Validate user token
+    token_validation = validate_user_token()
+    if token_validation:
+        return token_validation
+
+    try:
+        # Get Spotify client
+        spotify_client = get_spotify_client()
+        if not spotify_client:
+            return jsonify({"error": "Unable to get Spotify client"}), 401
+        
+        discovered_tracks = []
+        
+        try:
+            # Method 1: Get user's top tracks (medium term)
+            top_tracks = spotify_client.current_user_top_tracks(limit=10, time_range='medium_term')
+            discovered_tracks.extend(top_tracks['items'])
+            app.logger.info(f"Found {len(top_tracks['items'])} top tracks")
+        except Exception as e:
+            app.logger.warning(f"Could not fetch top tracks: {str(e)}")
+        
+        try:
+            # Method 2: Get featured playlists and sample tracks from them
+            featured_playlists = spotify_client.featured_playlists(limit=5)
+            for playlist in featured_playlists['playlists']['items']:
+                try:
+                    playlist_tracks = spotify_client.playlist_tracks(playlist['id'], limit=3)
+                    for item in playlist_tracks['items']:
+                        if item['track'] and item['track']['type'] == 'track':
+                            discovered_tracks.append(item['track'])
+                except Exception as e:
+                    app.logger.warning(f"Could not fetch tracks from playlist {playlist['name']}: {str(e)}")
+                    continue
+            app.logger.info(f"Added tracks from featured playlists")
+        except Exception as e:
+            app.logger.warning(f"Could not fetch featured playlists: {str(e)}")
+        
+        try:
+            # Method 3: Get new releases
+            new_releases = spotify_client.new_releases(limit=10)
+            for album in new_releases['albums']['items']:
+                try:
+                    album_tracks = spotify_client.album_tracks(album['id'], limit=2)
+                    for track in album_tracks['items']:
+                        # Need to get full track info since album_tracks returns simplified
+                        full_track = spotify_client.track(track['id'])
+                        discovered_tracks.append(full_track)
+                except Exception as e:
+                    app.logger.warning(f"Could not fetch tracks from album {album['name']}: {str(e)}")
+                    continue
+            app.logger.info(f"Added tracks from new releases")
+        except Exception as e:
+            app.logger.warning(f"Could not fetch new releases: {str(e)}")
+        
+        # If we have some tracks, try to get recommendations based on them
+        if discovered_tracks:
+            try:
+                # Get a few seed tracks for recommendations
+                seed_tracks = [track['id'] for track in discovered_tracks[:5]]
+                recommendations = spotify_client.recommendations(seed_tracks=seed_tracks, limit=15)
+                discovered_tracks.extend(recommendations['tracks'])
+                app.logger.info(f"Added {len(recommendations['tracks'])} recommended tracks")
+            except Exception as e:
+                app.logger.warning(f"Could not fetch recommendations: {str(e)}")
+        
+        # Remove duplicates and limit results
+        seen_ids = set()
+        unique_tracks = []
+        for track in discovered_tracks:
+            if track['id'] not in seen_ids:
+                seen_ids.add(track['id'])
+                unique_tracks.append(track)
+                if len(unique_tracks) >= 25:  # Limit to 25 tracks
+                    break
+        
+        if not unique_tracks:
+            # Fallback: Get some popular tracks if nothing else worked
+            app.logger.info("No tracks found, using fallback popular tracks")
+            # You can implement a fallback here or return an error
+            return jsonify({"error": "Could not discover any tracks"}), 404
+        
+        app.logger.info(f"Returning {len(unique_tracks)} unique tracks")
+        return jsonify({"tracks": unique_tracks}), 200
+        
+    except Exception as e:
+        app.logger.error(f"Error discovering tracks from Spotify: {str(e)}")
+        return jsonify({"error": "Failed to discover tracks from Spotify"}), 500
 
 
-    return jsonify([{
-        "id":       t["id"],
-        "name":     t["name"],
-        "artists":  ", ".join(a["name"] for a in t["artists"]),
-        "albumArt": t["album"]["images"][0]["url"] if t["album"]["images"] else None,
-        "preview":  t["preview_url"],
-    } for t in tracks if t])
+@app.route('/api/spotify/tracks', methods=['GET'])
+def get_spotify_tracks():
+    """
+    Get track details from Spotify API using the "Get Several Tracks" endpoint
+    Expects comma-separated track IDs in the 'ids' query parameter
+    """
+    # Validate user token
+    token_validation = validate_user_token()
+    if token_validation:
+        return token_validation
+
+    try:
+        # Get the comma-separated track IDs from query parameters
+        track_ids = request.args.get('ids')
+        if not track_ids:
+            return jsonify({"error": "Missing 'ids' parameter"}), 400
+        
+        # Validate that we don't exceed the 50 ID limit
+        ids_list = track_ids.split(',')
+        if len(ids_list) > 50:
+            return jsonify({"error": "Maximum 50 track IDs allowed"}), 400
+        
+        # Get Spotify client
+        spotify_client = get_spotify_client()
+        if not spotify_client:
+            return jsonify({"error": "Unable to get Spotify client"}), 401
+        
+        # Get market (country code) from request or default to US
+        market = request.args.get('market', 'US')
+        
+        # Make the API call to Spotify
+        tracks_data = spotify_client.tracks(tracks=ids_list, market=market)
+        
+        return jsonify(tracks_data), 200
+        
+    except Exception as e:
+        app.logger.error(f"Error fetching tracks from Spotify: {str(e)}")
+        return jsonify({"error": "Failed to fetch tracks from Spotify"}), 500
 
 # This code is so that we can store "likes" and "dislikes" to MongoDB.
 # First the code checks if the user has a valid Spotify account/token. If they do, then the code will extract the "like" or the "dislike" from request.
@@ -663,4 +725,3 @@ def api_get_new_releases():
 if __name__ == '__main__':
     debug_mode = os.getenv('FLASK_ENV') != 'production'
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)),debug=debug_mode)
-
