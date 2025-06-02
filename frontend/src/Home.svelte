@@ -1,20 +1,9 @@
 <script lang="ts">
     import type { User } from './lib/User';
-    import sampleTracks from './assets/sample_songs.json'
     import {onMount} from "svelte";
   
     export let userInfo: User;
     export let logout: () => void;
-
-    function transformData(songs: any) {
-      return songs.items.map((song: any) => {
-        return {
-          image: song.track.album.images[0]?.url, // Can put if condition here for default image
-          name: song.track.name,
-          artist: song.track.artists.map((artist: any) => artist.name).join(", "), // More than one artist
-        }
-      });
-    }
 
     // Function to transform new releases data from Spotify API
     function transformNewReleases(releases: any) {
@@ -64,8 +53,6 @@
       });
     }
 
-    let trendingSongs = [];
-    let recentSongs = [];
     let newReleases = [];
     let userTracks = [];
     let browseCategories = [];
@@ -124,11 +111,6 @@
 
     onMount(async () => {
       loading = true;
-      
-      // Get trending songs and recent songs from backend.
-      // Hopefully transformation can be done on backend side too.
-      trendingSongs = transformData(sampleTracks);
-      recentSongs = transformData(sampleTracks);
       
       // Fetch new releases, user tracks, and browse categories from Spotify
       const [newReleasesData, userTracksData, browseCategoriesData] = await Promise.all([
