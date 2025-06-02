@@ -578,10 +578,13 @@
 		  console.log("No new tracks found after filtering");
 		  return;
 		}
-		
-		tracks = newTracks.map(track => track.id);
+		newTracks.forEach(track => {
+			if (!tracks.find(t => t === track.id)) {
+				tracks.push(track.id);
+			}
+		});
 		trackDetails = newTracks;
-		
+
 		// Mark these tracks as shown
 		newTracks.forEach(track => shownTrackIds.add(track.id));
 		
