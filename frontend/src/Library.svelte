@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
-  import type { User } from "../lib/User"; // Assuming User type is defined
-  import "./styles/Library.css";
+  import type { User } from "./lib/User"; // Assuming User type is defined
+  import "./styles/library.css";
 
   // Props passed from App.svelte
   export let userInfo: User | null; // User info, can be null if not immediately available

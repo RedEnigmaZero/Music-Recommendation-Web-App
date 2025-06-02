@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import type { User } from "../lib/User"; // Assuming User type
-  import "./styles/Search.css"; // Styles for the search view
+  import type { User } from "./lib/User"; // Assuming User type
+  import "./styles/search.css"; // Styles for the search view
 
   export let userInfo: User | null; // Passed from App.svelte
   export let logout: () => void; // Passed from App.svelte
