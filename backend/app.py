@@ -191,6 +191,80 @@ def api_get_playlists():
              return jsonify({"error": "Spotify authorization error. Please log in again."}), 401
         return jsonify({"error": "Failed to fetch playlists from Spotify"}), 500
 
+
+@app.route("/api/spotify/search")
+def api_spotify_search():
+    app.logger.debug("APP: Entered /api/spotify/search route")
+
+    auth_error = validate_user_token()
+    if auth_error:
+        return auth_error
+
+    query = request.args.get('q')
+    # Default to searching for tracks, artists, and albums if no specific type is given
+    # Types should be a comma-separated string, e.g., "track,artist,album"
+    search_types_str = request.args.get('type', 'track,artist,album')
+    search_types_list = [t.strip() for t in search_types_str.split(',')]
+    limit_per_type = int(request.args.get('limit', 10)) # How many results per type
+
+    if not query:
+        app.logger.warn("APP: /api/spotify/search - No query provided.")
+        return jsonify({"error": "Search query parameter 'q' is required"}), 400
+
+    app.logger.debug(f"APP: /api/spotify/search - Query: '{query}', Types: {search_types_list}, Limit: {limit_per_type}")
+
+    try:
+        # The sp.search method can take a list of types
+        results = sp.search(q=query, type=search_types_list, limit=limit_per_type)
+        app.logger.debug("APP: /api/spotify/search - Search results from Spotify received.")
+        
+        # Process results to send a cleaner structure if desired, or send as is
+        # Spotipy returns a dict with keys like 'tracks', 'artists', 'albums',
+        # each containing a Paging Object with an 'items' list.
+        
+        # Example of structuring the response:
+        processed_results = {}
+        if results:
+            if 'tracks' in results and results['tracks']:
+                processed_results['tracks'] = [{
+                    "id": item.get('id'),
+                    "name": item.get('name'),
+                    "artists": [{"name": artist.get('name'), "id": artist.get('id')} for artist in item.get('artists', [])],
+                    "album_name": item.get('album', {}).get('name'),
+                    "image_url": item.get('album', {}).get('images')[0].get('url') if item.get('album', {}).get('images') else None,
+                    "url": item.get('external_urls', {}).get('spotify')
+                } for item in results['tracks'].get('items', [])]
+            
+            if 'artists' in results and results['artists']:
+                processed_results['artists'] = [{
+                    "id": item.get('id'),
+                    "name": item.get('name'),
+                    "image_url": item.get('images')[0].get('url') if item.get('images') else None,
+                    "genres": item.get('genres', []),
+                    "url": item.get('external_urls', {}).get('spotify')
+                } for item in results['artists'].get('items', [])]
+
+            if 'albums' in results and results['albums']:
+                 processed_results['albums'] = [{
+                    "id": item.get('id'),
+                    "name": item.get('name'),
+                    "artists": [{"name": artist.get('name'), "id": artist.get('id')} for artist in item.get('artists', [])],
+                    "image_url": item.get('images')[0].get('url') if item.get('images') else None,
+                    "release_date": item.get('release_date'),
+                    "total_tracks": item.get('total_tracks'),
+                    "url": item.get('external_urls', {}).get('spotify')
+                } for item in results['albums'].get('items', [])]
+
+        return jsonify(processed_results)
+
+    except Exception as e:
+        app.logger.error(f"APP: /api/spotify/search - Error during Spotify search: {str(e)}")
+        if hasattr(e, 'http_status') and e.http_status == 401:
+             session.clear()
+             return jsonify({"error": "Spotify authorization error during search. Please log in again."}), 401
+        return jsonify({"error": "Failed to perform search on Spotify"}), 500
+    
+    
 # Add these routes to your Flask app
 
 @app.route('/api/spotify/discover-tracks')
