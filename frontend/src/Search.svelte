@@ -243,7 +243,7 @@
                 href={artist.url || "#"}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="result-link"
+                class="result-link artist-link"
               >
                 {#if artist.image_url}
                   <img
@@ -283,7 +283,7 @@
                 href={album.url || "#"}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="result-link"
+                class="result-link album-link"
               >
                 {#if album.image_url}
                   <img

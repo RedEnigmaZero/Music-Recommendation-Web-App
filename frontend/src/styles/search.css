@@ -115,6 +115,20 @@
   .artists-list,
   .albums-list {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+/*   Adjust the horizontal gap   */
+    column-gap: 3rem;
+  }
+
+/*  Sizing specific to album and artist  */
+  .artist-item,
+  .album-item {
+    padding: 1rem 1rem 0.5rem 1rem;
+    width: 165px;
+  }
+
+  .album-link,
+  .artist-link {
+    width: 133px;
   }
 
   .result-item {
@@ -123,8 +137,7 @@
     background-color: #181818;
     border-radius: 8px;
     transition: background-color 0.3s;
-    padding-top: 1rem;
-    width: 165px;
+    padding: 1rem;
     overflow: hidden;
   }
   .result-item:hover {
@@ -135,10 +148,8 @@
     color: inherit;
     display: flex;
     flex-direction: column;
-    padding: 1rem 1rem 0.5rem 1rem;
+    padding: 1rem;
     height: 100%;
-    /* Set to maximum size of image */
-    max-width: 133px;
     text-wrap: nowrap;
     text-overflow: ellipsis;
   }
