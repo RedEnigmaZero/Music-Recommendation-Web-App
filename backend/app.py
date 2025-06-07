@@ -598,43 +598,6 @@ def user():
         request.user = None
         app.logger.debug("APP: @before_request - No 'user' key found in session for this request.")
 
-# The code down below is a route that is called after the user logs in through Dex.
-# The code should work by getting the user's name, email, and moderator status from the token from Dex.
-# Then it stores that information in the Flask session so that is is saved. Then it will go back to the homepage and showed that the user is logged in.
-# Authorization Code Flow: https://auth0.com/docs/get-started/authentication-and-authorization-flow/authorization-code-flow
-# JWT: https://jwt.io/introduction
-# Flask-OIDC: https://flask-oidc.readthedocs.io/en/latest/
-"""
-@app.route("/authorize")
-def authorize():
-    code = request.args.get("code")
-    token_url = os.getenv("OIDC_TOKEN_URL", "http://dex:5556/token")
-    client_id = os.getenv("OIDC_CLIENT_ID")
-    client_secret = os.getenv("OIDC_CLIENT_SECRET")
-    redirect_uri = "http://localhost:8000/authorize"
-
-    token_response = requests.post(token_url, data={
-        "grant_type": "authorization_code",
-        "code": code,
-        "redirect_uri": redirect_uri,
-        "client_id": client_id,
-        "client_secret": client_secret
-    })
-
-    token_data = token_response.json()
-    id_token = token_data["id_token"]
-    access_token = token_data["access_token"]
-    claims = jwt.decode(id_token, key='', options={"verify_signature": False}, audience=client_id, access_token=access_token)
-
-    user = {
-        "name": claims.get("name"),
-        "email": claims.get("email"),
-        "moderator": claims.get("email") == "moderator@hw3.com" or claims.get("email") == "admin@hw3.com"
-    }
-    session["user"] = user
-    return redirect("http://localhost:5173/")
-
-"""
 # The code down below is a route that is used when the user wants to logout.
 # The code works by clearing out the session data, and then going back to the homepage.
 
